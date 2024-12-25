@@ -1,4 +1,4 @@
-local githubRepo = "https://raw.githubusercontent.com/cuenhub/zenith-core/tree/main/games/"
+local githubRepo = "https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/"
 local supportedGames = {
     [14259168147] = "basketballlegends.lua", 
 }
