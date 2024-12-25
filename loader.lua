@@ -3,7 +3,7 @@ local supportedGames = {
     [14259168147] = "basketballlegends.lua", 
 }
 
-debug.setmemorycategory("Loader")
+
 local function loadScript(scriptUrl)
     local success, response = pcall(function()
         return game:HttpGet(scriptUrl)
