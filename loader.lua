@@ -28,5 +28,5 @@ if scriptName then
     local scriptUrl = githubRepo .. scriptName
     loadScript(scriptUrl)
 else
-    print("game not supported.")
+    loadScript(githubRepo .. "unsupported.lua")
 end
