@@ -1,5 +1,5 @@
 local gameScripts = {
-    ["basketballlegends"] = 14259168147, -- Replace with the actual game name and PlaceId
+    ["basketballlegends"] = 14259168147,
 }
 
 
