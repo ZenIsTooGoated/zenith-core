@@ -1,32 +1,17 @@
-local githubRepo = "https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/"
-local supportedGames = {
-    [14259168147] = "basketballlegends.lua", 
+local gameScripts = {
+    ["basketballlegends"] = 14259168147, -- Replace with the actual game name and PlaceId
 }
 
 
-local function loadScript(scriptUrl)
-    local success, response = pcall(function()
-        return game:HttpGet(scriptUrl)
-    end)
-
-    if success then
-        local func, loadErr = loadstring(response)
-        if not func then
-            warn("error loading script: " .. (loadErr or "unknown error"))
-            return
-        end
-        pcall(func)
-    else
-        warn("failed to fetch script: " .. (response or "unknown error"))
+local scriptLoaded = false
+for gameName, placeId in pairs(gameScripts) do
+    if game.PlaceId == placeId then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/"..gameName))()
+        scriptLoaded = true
+        break
     end
 end
 
-local placeId = game.PlaceId
-local scriptName = supportedGames[placeId]
-
-if scriptName then
-    local scriptUrl = githubRepo .. scriptName
-    loadScript(scriptUrl)
-else
-    loadScript(githubRepo .. "unsupported.lua")
+if not scriptLoaded then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/unsupported.lua"))()
 end
