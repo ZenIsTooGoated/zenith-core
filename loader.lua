@@ -1,17 +1,15 @@
 local gameScripts = {
-    ["basketballlegends"] = 14259168147,
+    ["basketballlegends"] = {
+        placeId = 14259168147,
+        gameId = 4931927012,
+    },
 }
 
-
-local scriptLoaded = false
-for gameName, placeId in pairs(gameScripts) do
-    if game.PlaceId == placeId then
+for gameName, ids in pairs(gameScripts) do
+    if (ids.placeId and game.PlaceId == ids.placeId) or (ids.gameId and game.GameId == ids.gameId) then
         loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/"..gameName..".lua"))()
-        scriptLoaded = true
-        break
+        return
     end
 end
 
-if not scriptLoaded then
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/unsupported.lua"))()
-end
+loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/unsupported.lua"))()
