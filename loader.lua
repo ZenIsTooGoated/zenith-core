@@ -10,8 +10,12 @@ local gameScripts = {
 	},
     ["tower of hell"] = {
 	placeId = 1962086868,
-	gameId = nil,
+	gameId = 703124385,
     },
+    ["arsenal"] = {
+	placeId = 286090429,
+	gameId = 111958650,
+    }
 }
 
 for gameName, ids in pairs(gameScripts) do
