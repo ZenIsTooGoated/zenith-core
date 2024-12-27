@@ -4,10 +4,15 @@
 |----------------------|--------|
 | Basketball Legends   |🟡|      
 | Counter Blox         |🟡|      
+| Blue Lock: Rivals    |🔴|    
+| Arsenal              |🔴|    
+| Tower of Hell        |🔴|    
+
 
 ### emojis:
 - 🟢 fully supported
 - 🟡 partially supported (some features may not work)
+- 🔴 work in progress
 
 ## status
 **working** ✅
