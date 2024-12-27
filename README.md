@@ -2,11 +2,13 @@
 ## supported games
 | game                 | status |
 |----------------------|--------|
+| Arsenal              |🟢|  
+| Tower of Hell        |🟢|    
 | Basketball Legends   |🟡|      
 | Counter Blox         |🟡|      
 | Blue Lock: Rivals    |🔴|    
-| Arsenal              |🔴|    
-| Tower of Hell        |🔴|    
+  
+
 
 
 ### emojis:
