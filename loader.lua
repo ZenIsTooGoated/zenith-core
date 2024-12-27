@@ -3,6 +3,10 @@ local gameScripts = {
         placeId = 14259168147,
         gameId = 4931927012,
     },
+
+    ["cbro"] = {
+        placeId = 301549746,
+        gameId = 115797356,
 }
 
 for gameName, ids in pairs(gameScripts) do
