@@ -5,7 +5,7 @@
 | Counter Blox         |🟢|      
 | Arsenal              |🟢|  
 | Tower of Hell        |🟢|    
-| Basketball Legends   |🟡|      
+| Basketball Legends   |🟢 |      
 | Blue Lock: Rivals    |🔴|    
   
 
