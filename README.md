@@ -7,9 +7,11 @@
 | Tower of Hell        |🟢|    
 | Basketball Legends   |🟢 |      
 | Blue Lock: Rivals    |🔴|    
-  
-
-
+| Fisch    |🔴|    
+| Blade Ball    |🔴|    
+| Blox Fruits    |🔴|    
+| Be a Paper Airplane Simulator    |🔴| 
+| Turbo Racing Simulator    |🔴|       
 
 ### emojis:
 - 🟢 fully supported
