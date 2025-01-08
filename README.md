@@ -6,12 +6,13 @@
 | Arsenal              |🟢|  
 | Tower of Hell        |🟢|    
 | Basketball Legends   |🟢 |      
+| Turbo Racing Simulator    |🟢|  
+| Be a Paper Airplane Simulator    |🟢| 
+| Fisch    |🟢|    
+| Blade Ball    |🟡|    
 | Blue Lock: Rivals    |🔴|    
-| Fisch    |🔴|    
-| Blade Ball    |🔴|    
 | Blox Fruits    |🔴|    
-| Be a Paper Airplane Simulator    |🔴| 
-| Turbo Racing Simulator    |🔴|       
+     
 
 ### emojis:
 - 🟢 fully supported
