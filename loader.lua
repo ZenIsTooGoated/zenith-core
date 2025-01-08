@@ -27,6 +27,10 @@ local gameScripts = {
     ["beapaperairplane"] = {
         placeId = 109543391562036,
         gameId = 6873502822,
+    },
+    ["dunkingsim"] = {
+        placeId = 7655745946,
+        gameId = 2974058674
     }
 }
 
