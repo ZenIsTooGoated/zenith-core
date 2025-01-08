@@ -17,7 +17,7 @@ local gameScripts = {
 	gameId = 111958650,
     }
     ["fisch"] = {
-	placeId = nil,
+	placeId = 16732694052,
 	gameId = 5750914919,
     }
 }
