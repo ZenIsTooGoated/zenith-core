@@ -8,6 +8,7 @@
 | Basketball Legends   |🟢 |      
 | Turbo Racing Simulator    |🟢|  
 | Be a Paper Airplane Simulator    |🟢| 
+| Dunking Simulator    |🟢| 
 | Fisch    |🟢|    
 | Blade Ball    |🟡|    
 | Blue Lock: Rivals    |🔴|    
