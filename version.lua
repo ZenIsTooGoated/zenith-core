@@ -1,1 +1,1 @@
-return "idk"
+return "v1.0.0"
