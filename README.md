@@ -10,6 +10,7 @@
 | Be a Paper Airplane Simulator    |🟢| 
 | Dunking Simulator    |🟢| 
 | Fisch    |🟢|    
+| Ability Wars    |🟢|    
 | Blade Ball    |🔴|    
 | Blue Lock: Rivals    |🔴|    
 | Blox Fruits    |🔴|    
