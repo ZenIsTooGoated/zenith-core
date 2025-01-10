@@ -31,6 +31,10 @@ local gameScripts = {
     ["dunkingsim"] = {
         placeId = 7655745946,
         gameId = 2974058674
+    },
+    ["abilitywars"] = {
+        placeId = 8260276694,
+        gameId = 3168615253
     }
 }
 
