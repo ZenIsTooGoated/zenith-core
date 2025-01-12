@@ -1,1 +1,1 @@
-return "v1.0.0"
+return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)["Name"]
