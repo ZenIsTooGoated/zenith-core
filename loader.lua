@@ -35,6 +35,10 @@ local gameScripts = {
     ["abilitywars"] = {
         placeId = 8260276694,
         gameId = 3168615253
+    },
+    ["breakin2"] = {
+        placeId = nil,
+        gameId = 4807308814
     }
 }
 
