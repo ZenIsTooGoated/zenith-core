@@ -1,3 +1,10 @@
+-- CREDITS TO MACLIB FOR ALL OF THIS, I'VE ONLY ADDED SOME MODIFICATIONS FOR MY PREFERENCES !!!!
+-- MACLIB GITBOOK: https://brady-xyz.gitbook.io/maclib-ui-library
+-- MACLIB GITHUB: https://github.com/biggaboy212/Maclib
+
+
+
+
 local MacLib = { 
 	Options = {}, 
 	Folder = "Maclib", 
