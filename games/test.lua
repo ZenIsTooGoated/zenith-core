@@ -1,27 +1,32 @@
-
 local httpService = game:GetService("HttpService")
-local scriptManager = {}
-do
-    scriptManager.Library = nil
 
+local InterfaceManager = {} do
+
+
+
+    function InterfaceManager:SetLibrary(library)
+		self.Library = library
+	end
+
+  
+
+    function InterfaceManager:BuildInterfaceSection(tab)
+        assert(self.Library, "Must set Library")
+		local Library = self.Library
+       
+        local leftSect = tab:Section({
+            Side = "Left"
+        })
+
+        leftSect:Button({
+            Name = "example button",
+            Callback = function()
+                print("something ig")
+            end
+        })
+        
+        
+    end
 end
 
-function scriptManager:SetLibrary(library)
-    self.Library = library
-end
-
-function scriptManager:BuildSection(tab)
-    
-
-    assert(self.Library, "set the library first")
-    local library = self.Library
-    
-    local gameSection = tab:Section({
-        Side = "Left"
-    })
-
-    
-
-end
-
-return scriptManager
+return InterfaceManager
