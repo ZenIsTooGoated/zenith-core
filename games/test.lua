@@ -24,4 +24,4 @@ function scriptManager:BuildSection(tab)
 
 end
 
-return 
+return scriptManager
