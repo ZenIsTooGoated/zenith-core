@@ -37,21 +37,28 @@ local function createText(label)
     return text
 end
 
--- | VARIABLES (from your original source)
-local min2 = Vector2.zero.Min
-local max2 = Vector2.zero.Max
-local min3 = Vector3.zero.Min
-local max3 = Vector3.zero.Max
-local vertices = {
-    Vector3.new(-1, -1, -1),
-    Vector3.new(-1, 1, -1),
-    Vector3.new(-1, 1, 1),
-    Vector3.new(-1, -1, 1),
-    Vector3.new(1, -1, -1),
-    Vector3.new(1, 1, -1),
-    Vector3.new(1, 1, 1),
-    Vector3.new(1, -1, 1)
-}
+-- Function to check if a position is on screen
+local function isOnScreen(position)
+    local _, inBounds = worldToScreen(position)
+    return inBounds
+end
+
+-- Function to get the bounding box size for the entire character
+local function getBoundingBox(parts)
+    local min, max
+    for i = 1, #parts do
+        local part = parts[i]
+        if part:IsA("BasePart") then
+            local cframe, size = part.CFrame, part.Size
+            min = min3(min or cframe.Position, (cframe - size * 0.5).Position)
+            max = max3(max or cframe.Position, (cframe + size * 0.5).Position)
+        end
+    end
+
+    local center = (min + max) * 0.5
+    local front = Vector3.new(center.X, center.Y, max.Z)
+    return CFrame.new(center, front), max - min
+end
 
 -- Function to calculate the corners of a box from CFrame and Size
 local function calculateCorners(cframe, size)
@@ -69,23 +76,6 @@ local function calculateCorners(cframe, size)
         bottomLeft = Vector2.new(floor(min.X), floor(max.Y)),
         bottomRight = Vector2.new(floor(max.X), floor(max.Y))
     }
-end
-
--- Function to get bounding box size for the entire character
-local function getBoundingBox(parts)
-    local min, max
-    for i = 1, #parts do
-        local part = parts[i]
-        if part:IsA("BasePart") then
-            local cframe, size = part.CFrame, part.Size
-            min = min3(min or cframe.Position, (cframe - size * 0.5).Position)
-            max = max3(max or cframe.Position, (cframe + size * 0.5).Position)
-        end
-    end
-
-    local center = (min + max) * 0.5
-    local front = Vector3.new(center.X, center.Y, max.Z)
-    return CFrame.new(center, front), max - min
 end
 
 -- | ESP HANDLER
