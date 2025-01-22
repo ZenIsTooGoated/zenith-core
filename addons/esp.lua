@@ -66,91 +66,52 @@ function espLib.createEsp(target)
         Visible = false,
     })
 
-    espObjects.tracer = createDrawing("Line", {
-        Thickness = 1,
-        Color = Color3.new(1, 1, 1),
-        Visible = false,
-    })
-
-    -- Individual On-Screen Checks
-    local function isOnScreen(position)
-        local _, onScreen = workspace.CurrentCamera:WorldToViewportPoint(position)
-        return onScreen
-    end
-
+    -- | Update ESP for Target
     function espObjects:updateEsp()
         if not target or not target:IsDescendantOf(workspace) then
-            debugLog("Target no longer exists or is not in workspace.")
             self:removeEsp()
             return
         end
 
-        -- Check if the target is a Model or a BasePart
-        local part
-        if target:IsA("BasePart") then
-            part = target
-        elseif target:IsA("Model") then
-            part = target:FindFirstChildOfClass("BasePart")
-        end
-
-        if part then
-            local screenPos, onScreen = worldToViewportPoint(part.Position)
-
-            -- Debug: Check if part is on screen
-            debugLog("Part Position: " .. tostring(part.Position) .. ", ScreenPos: " .. tostring(screenPos) .. ", OnScreen: " .. tostring(onScreen))
+        local rootPart = target:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            local screenPos, onScreen = worldToViewportPoint(rootPart.Position)
 
             -- Update Name
             if espLib.settings.name then
-                local nameOnScreen = isOnScreen(part.Position + Vector3.new(0, 5, 0))
                 self.name.Text = target.Name
-                self.name.Position = screenPos - Vector2.new(self.name.TextBounds.X / 2, 50)
-                self.name.Visible = nameOnScreen
-            else
-                self.name.Visible = false
+                self.name.Position = screenPos - Vector2.new(self.name.TextBounds.X / 2, 20)
+                self.name.Visible = onScreen
             end
 
             -- Update Box and Outline
             if espLib.settings.box then
-                local boxSize = Vector2.new(50, 100) -- Adjust box size as needed
+                local boxSize = Vector2.new(50, 100)
                 local boxPos = screenPos - boxSize / 2
-                local boxOnScreen = isOnScreen(part.Position)
-
-                -- Box visible first, then outline
                 self.box.Size = boxSize
                 self.box.Position = boxPos
-                self.box.Visible = boxOnScreen
+                self.box.Visible = onScreen
 
-                if espLib.settings.outlines then
-                    self.boxOutline.Size = boxSize
-                    self.boxOutline.Position = boxPos
-                    self.boxOutline.Visible = boxOnScreen
-                else
-                    self.boxOutline.Visible = false
-                end
-            else
-                self.box.Visible = false
-                self.boxOutline.Visible = false
+                self.boxOutline.Size = boxSize
+                self.boxOutline.Position = boxPos
+                self.boxOutline.Visible = onScreen
             end
 
             -- Update Distance
             if espLib.settings.distance then
-                local distance = (workspace.CurrentCamera.CFrame.Position - part.Position).Magnitude
-                local distanceOnScreen = isOnScreen(part.Position)
+                local distance = (workspace.CurrentCamera.CFrame.Position - rootPart.Position).Magnitude
                 self.distance.Text = string.format("%.0f studs", distance)
-                self.distance.Position = screenPos + Vector2.new(-self.distance.TextBounds.X / 2, 60)
-                self.distance.Visible = distanceOnScreen
-            else
-                self.distance.Visible = false
+                self.distance.Position = screenPos + Vector2.new(-self.distance.TextBounds.X / 2, 120)
+                self.distance.Visible = onScreen
             end
 
-            -- Update Tracer
+            -- Update Tracers
             if espLib.settings.tracers then
-                local tracerOnScreen = isOnScreen(part.Position)
-                self.tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                self.tracer.To = screenPos
-                self.tracer.Visible = tracerOnScreen
-            else
-                self.tracer.Visible = false
+                local tracerFrom = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                local tracerTo = screenPos
+                self.tracer.From = tracerFrom
+                self.tracer.To = tracerTo
+                self.tracer.Visible = onScreen
             end
         else
             self:removeEsp()
@@ -168,8 +129,5 @@ function espLib.createEsp(target)
     return espObjects
 end
 
-
+-- Return the ESP library for usage
 return espLib
-
-
-
