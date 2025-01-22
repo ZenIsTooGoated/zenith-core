@@ -3,12 +3,10 @@ espLib.settings = {
     box = true,
     name = true,
     distance = true,
-    health = true,
     tracers = true,
     outlines = true,
     font = Drawing.Fonts.Plex,
-    playerEsp = true, -- New setting to enable automatic player ESP
-    debug = true -- Setting to enable debug logs
+    debug = false
 }
 
 -- | Utility Functions
@@ -26,10 +24,10 @@ local function worldToViewportPoint(position)
     return Vector2.new(viewportPoint.X, viewportPoint.Y), onScreen
 end
 
--- | Debug Function
+-- | Debug Log
 local function debugLog(message)
     if espLib.settings.debug then
-        print("[ESP DEBUG] " .. message)
+        print(message)
     end
 end
 
@@ -54,20 +52,6 @@ function espLib.createEsp(target)
     })
 
     espObjects.boxOutline = createDrawing("Square", {
-        Thickness = 2,
-        Color = Color3.new(0, 0, 0),
-        Filled = false,
-        Visible = false,
-    })
-
-    espObjects.healthBar = createDrawing("Square", {
-        Thickness = 0,
-        Filled = true,
-        Color = Color3.new(0, 1, 0),
-        Visible = false,
-    })
-
-    espObjects.healthBarOutline = createDrawing("Square", {
         Thickness = 2,
         Color = Color3.new(0, 0, 0),
         Filled = false,
@@ -101,29 +85,35 @@ function espLib.createEsp(target)
             return
         end
 
-        local rootPart = target:FindFirstChild("HumanoidRootPart")
-        local humanoid = target:FindFirstChildWhichIsA("Humanoid")
-        if rootPart and humanoid and humanoid.Health > 0 then
-            local screenPos, onScreen = worldToViewportPoint(rootPart.Position)
+        -- Check if the target is a Model or a BasePart
+        local part
+        if target:IsA("BasePart") then
+            part = target
+        elseif target:IsA("Model") then
+            part = target:FindFirstChildOfClass("BasePart")
+        end
+
+        if part then
+            local screenPos, onScreen = worldToViewportPoint(part.Position)
+
+            -- Debug: Check if part is on screen
+            debugLog("Part Position: " .. tostring(part.Position) .. ", ScreenPos: " .. tostring(screenPos) .. ", OnScreen: " .. tostring(onScreen))
 
             -- Update Name
             if espLib.settings.name then
-                local nameOnScreen = isOnScreen(rootPart.Position + Vector3.new(0, 5, 0))
+                local nameOnScreen = isOnScreen(part.Position + Vector3.new(0, 5, 0))
                 self.name.Text = target.Name
                 self.name.Position = screenPos - Vector2.new(self.name.TextBounds.X / 2, 50)
                 self.name.Visible = nameOnScreen
-                if espLib.settings.debug then
-                    debugLog("Updated name for " .. target.Name)
-                end
             else
                 self.name.Visible = false
             end
 
-            -- Update Box and Outline (Fix outline being above box)
+            -- Update Box and Outline
             if espLib.settings.box then
-                local boxSize = Vector2.new(50, 100)
+                local boxSize = Vector2.new(50, 100) -- Adjust box size as needed
                 local boxPos = screenPos - boxSize / 2
-                local boxOnScreen = isOnScreen(rootPart.Position)
+                local boxOnScreen = isOnScreen(part.Position)
 
                 -- Box visible first, then outline
                 self.box.Size = boxSize
@@ -137,71 +127,32 @@ function espLib.createEsp(target)
                 else
                     self.boxOutline.Visible = false
                 end
-
-                if espLib.settings.debug then
-                    debugLog("Updated box for " .. target.Name)
-                end
             else
                 self.box.Visible = false
                 self.boxOutline.Visible = false
             end
 
-            -- Update Health Bar and Outline
-            if espLib.settings.health then
-                local healthRatio = humanoid.Health / humanoid.MaxHealth
-                local barHeight = 100 * healthRatio
-                local barSize = Vector2.new(4, barHeight)
-                local barPos = self.box.Position - Vector2.new(6, 0)
-                local barOnScreen = isOnScreen(rootPart.Position)
-
-                self.healthBar.Size = barSize
-                self.healthBar.Position = Vector2.new(barPos.X, barPos.Y + (100 - barHeight))
-                self.healthBar.Color = Color3.fromRGB(255 * (1 - healthRatio), 255 * healthRatio, 0)
-                self.healthBar.Visible = barOnScreen
-
-                if espLib.settings.outlines then
-                    self.healthBarOutline.Size = Vector2.new(4, 100)
-                    self.healthBarOutline.Position = barPos
-                    self.healthBarOutline.Visible = barOnScreen
-                else
-                    self.healthBarOutline.Visible = false
-                end
-                if espLib.settings.debug then
-                    debugLog("Updated health bar for " .. target.Name)
-                end
-            else
-                self.healthBar.Visible = false
-                self.healthBarOutline.Visible = false
-            end
-
             -- Update Distance
             if espLib.settings.distance then
-                local distance = (workspace.CurrentCamera.CFrame.Position - rootPart.Position).Magnitude
-                local distanceOnScreen = isOnScreen(rootPart.Position)
+                local distance = (workspace.CurrentCamera.CFrame.Position - part.Position).Magnitude
+                local distanceOnScreen = isOnScreen(part.Position)
                 self.distance.Text = string.format("%.0f studs", distance)
                 self.distance.Position = screenPos + Vector2.new(-self.distance.TextBounds.X / 2, 60)
                 self.distance.Visible = distanceOnScreen
-                if espLib.settings.debug then
-                    debugLog("Updated distance for " .. target.Name .. ": " .. distance .. " studs")
-                end
             else
                 self.distance.Visible = false
             end
 
             -- Update Tracer
             if espLib.settings.tracers then
-                local tracerOnScreen = isOnScreen(rootPart.Position)
+                local tracerOnScreen = isOnScreen(part.Position)
                 self.tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
                 self.tracer.To = screenPos
                 self.tracer.Visible = tracerOnScreen
-                if espLib.settings.debug then
-                    debugLog("Updated tracer for " .. target.Name)
-                end
             else
                 self.tracer.Visible = false
             end
         else
-            debugLog("Target is invalid (no humanoid or health < 1).")
             self:removeEsp()
         end
     end
@@ -212,39 +163,13 @@ function espLib.createEsp(target)
                 object:Remove()
             end
         end
-        debugLog("Removed ESP for " .. target.Name)
     end
 
     return espObjects
 end
 
--- | Function to Create Player ESP
-function espLib.createPlayerEsp(player)
-    local espObjects
-    player.CharacterAdded:Connect(function(character)
-        local rootPart = character:WaitForChild("HumanoidRootPart")
-        
-        -- Create ESP for this player
-        espObjects = espLib.createEsp(character)
-        
-        -- Automatically remove ESP when the player leaves or character is removed
-        local function playerLeaving()
-            if espObjects then
-                espObjects:removeEsp()
-            end
-        end
-
-        player.CharacterRemoving:Connect(playerLeaving)
-        player.OnDestroy = playerLeaving
-        debugLog("Created ESP for player " .. player.Name)
-    end)
-end
-
--- | Create ESP for all players if enabled
-if espLib.settings.playerEsp then
-    game.Players.PlayerAdded:Connect(function(player)
-        espLib.createPlayerEsp(player)
-    end)
-end
 
 return espLib
+
+
+
