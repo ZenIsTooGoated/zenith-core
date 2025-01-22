@@ -37,11 +37,27 @@ local function createText(label)
     return text
 end
 
--- Function to calculate the corners and bounding box
+-- | VARIABLES (from your original source)
+local min2 = Vector2.zero.Min
+local max2 = Vector2.zero.Max
+local min3 = Vector3.zero.Min
+local max3 = Vector3.zero.Max
+local vertices = {
+    Vector3.new(-1, -1, -1),
+    Vector3.new(-1, 1, -1),
+    Vector3.new(-1, 1, 1),
+    Vector3.new(-1, -1, 1),
+    Vector3.new(1, -1, -1),
+    Vector3.new(1, 1, -1),
+    Vector3.new(1, 1, 1),
+    Vector3.new(1, -1, 1)
+}
+
+-- Function to calculate the corners of a box from CFrame and Size
 local function calculateCorners(cframe, size)
     local corners = {}
-    for i = 1, #VERTICES do
-        corners[i] = worldToScreen((cframe + size * 0.5 * VERTICES[i]).Position)
+    for i = 1, #vertices do
+        corners[i] = worldToScreen((cframe + size * 0.5 * vertices[i]).Position)
     end
 
     local min = min2(viewportSize, unpack(corners))
