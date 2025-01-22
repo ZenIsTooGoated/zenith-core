@@ -6,7 +6,8 @@ espLib.settings = {
     health = true,
     tracers = true,
     outlines = true,
-    font = Drawing.Fonts.Plex
+    font = Drawing.Fonts.Plex,
+    playerEsp = true -- New setting to enable automatic player ESP
 }
 
 -- | Utility Functions
@@ -106,12 +107,13 @@ function espLib.createEsp(target)
                 self.name.Visible = false
             end
 
-            -- Update Box and Outline
+            -- Update Box and Outline (Fix outline being above box)
             if espLib.settings.box then
                 local boxSize = Vector2.new(50, 100)
                 local boxPos = screenPos - boxSize / 2
                 local boxOnScreen = isOnScreen(rootPart.Position)
 
+                -- Box visible first, then outline
                 self.box.Size = boxSize
                 self.box.Position = boxPos
                 self.box.Visible = boxOnScreen
@@ -187,6 +189,29 @@ function espLib.createEsp(target)
     end
 
     return espObjects
+end
+
+-- | Automatic Player ESP
+function espLib.createPlayerEsp(player)
+    local espObjects = espLib.createEsp(player)
+
+    -- Automatically destroy ESP when player leaves or no longer exists
+    local function playerLeaving()
+        espObjects:removeEsp()
+    end
+
+    -- Automatically remove the ESP if the player leaves
+    player.OnDestroy = playerLeaving
+    player.CharacterRemoving:Connect(playerLeaving)
+
+    return espObjects
+end
+
+-- | Create ESP for all players if enabled
+if espLib.settings.playerEsp then
+    game.Players.PlayerAdded:Connect(function(player)
+        espLib.createPlayerEsp(player)
+    end)
 end
 
 return espLib
