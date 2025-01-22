@@ -6,8 +6,7 @@ espLibrary.settings.box = {
     enabled = true,
     color = Color3.fromRGB(255, 255, 255),
     outline = true,
-    outlineColor = Color3.fromRGB(0, 0, 0),
-    margin = 10  -- Additional margin to make the box larger than the parts
+    outlineColor = Color3.fromRGB(0, 0, 0)
 }
 
 espLibrary.settings.tracer = {
@@ -125,13 +124,6 @@ function espLibrary:createEsp(target)
                 yMaximal = y
             end
         end
-
-        -- Add margin to the box size
-        local margin = espLibrary.settings.box.margin
-        xMinimal = xMinimal - margin
-        xMaximal = xMaximal + margin
-        yMinimal = yMinimal - margin
-        yMaximal = yMaximal + margin
 
         -- Calculate the box size based on min/max values
         local boxSize = Vector2.new(xMaximal - xMinimal, yMaximal - yMinimal)
