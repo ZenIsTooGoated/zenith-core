@@ -1,11 +1,13 @@
+-- Example of a full ESP setup for players using the Drawing API
+
 local esplibrary = {}
 esplibrary.settings = {}
 
--- Default settings for ESP components
+-- Add some basic settings for visibility, color, etc.
 esplibrary.settings.box = {
     enabled = true,
-    outline = true,
     color = Color3.fromRGB(255, 255, 255),
+    outline = true,
     outlineColor = Color3.fromRGB(0, 0, 0)
 }
 
@@ -15,7 +17,7 @@ esplibrary.settings.tracer = {
 }
 
 esplibrary.settings.healthbar = {
-    enabled = false,
+    enabled = true,
     color = Color3.fromRGB(0, 255, 0)
 }
 
@@ -29,7 +31,7 @@ esplibrary.settings.distance = {
     color = Color3.fromRGB(255, 255, 255)
 }
 
--- Utility function to get the distance between the local player and a target
+-- Function to get the distance between the local player and a target
 local function getDistanceToTarget(target)
     local player = game.Players.LocalPlayer
     local targetPosition = target.HumanoidRootPart.Position
@@ -37,19 +39,18 @@ local function getDistanceToTarget(target)
     return (targetPosition - playerPosition).Magnitude
 end
 
--- Method to create ESP for a target
 function esplibrary:createESP(target)
-    -- Ensure the target has a HumanoidRootPart (if it's a model or player)
+    -- Ensure the target has a HumanoidRootPart
     if not target or not target:FindFirstChild("HumanoidRootPart") then return end
-
+    
     -- Create drawing elements
     local box = Drawing.new("Square")
-    local outline = Drawing.new("Square")  -- This will be our outline
+    local outline = Drawing.new("Square")
     local tracer = Drawing.new("Line")
     local healthbar = Drawing.new("Line")
     local usernameText = Drawing.new("Text")
     local distanceText = Drawing.new("Text")
-
+    
     -- Box settings
     box.Visible = false
     box.Transparency = 1
@@ -57,7 +58,7 @@ function esplibrary:createESP(target)
     box.Filled = false
     box.Color = esplibrary.settings.box.color
 
-    -- Outline settings (we'll make it slightly larger than the box)
+    -- Outline settings
     outline.Visible = false
     outline.Transparency = 1
     outline.Thickness = 2
@@ -100,10 +101,8 @@ function esplibrary:createESP(target)
 
     -- Update function to continuously update ESP
     game:GetService("RunService").RenderStepped:Connect(function()
-        -- Get 2D screen position of the target
         local screenPosition, onScreen = workspace.CurrentCamera:WorldToScreenPoint(target.HumanoidRootPart.Position)
         if not onScreen then
-            -- If the target is off-screen, do not draw
             box.Visible = false
             outline.Visible = false
             tracer.Visible = false
@@ -113,23 +112,20 @@ function esplibrary:createESP(target)
             return
         end
 
-        -- Calculate the bounding box size based on the part's size
-        local size = target.HumanoidRootPart.Size  -- Get the size of the part (HumanoidRootPart in this case)
-        local screenPosition, _ = workspace.CurrentCamera:WorldToScreenPoint(target.HumanoidRootPart.Position)
+        local size = target.HumanoidRootPart.Size
         local position = Vector2.new(screenPosition.X - size.X / 2, screenPosition.Y - size.Y / 2)
 
         -- Box
         if esplibrary.settings.box.enabled then
             box.Visible = true
-            box.Size = Vector2.new(size.X, size.Y)  -- Adjust box size to part's size
+            box.Size = Vector2.new(size.X, size.Y)
             box.Position = position
-            box.Color = esplibrary.settings.box.color
 
-            -- Outline (placed just below the box)
+            -- Outline
             if esplibrary.settings.box.outline then
                 outline.Visible = true
-                outline.Size = Vector2.new(size.X + 2, size.Y + 2)  -- Make the outline 2 pixels bigger
-                outline.Position = position - Vector2.new(2, 2)  -- Shift the outline to create the effect
+                outline.Size = Vector2.new(size.X + 2, size.Y + 2)
+                outline.Position = position - Vector2.new(2, 2)
                 outline.Color = esplibrary.settings.box.outlineColor
             else
                 outline.Visible = false
@@ -142,7 +138,7 @@ function esplibrary:createESP(target)
         -- Tracer
         if esplibrary.settings.tracer.enabled then
             tracer.Visible = true
-            tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)  -- Player's screen center
+            tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
             tracer.To = Vector2.new(screenPosition.X, screenPosition.Y)
             tracer.Color = esplibrary.settings.tracer.color
         else
@@ -151,7 +147,7 @@ function esplibrary:createESP(target)
 
         -- Healthbar
         if esplibrary.settings.healthbar.enabled then
-            local healthHeight = 50  -- Example size, this can be adjusted to be based on health
+            local healthHeight = 50  -- Example size
             local healthPosition = Vector2.new(screenPosition.X + size.X / 2 + 10, screenPosition.Y)
 
             healthbar.Visible = true
@@ -184,4 +180,5 @@ function esplibrary:createESP(target)
         end
     end)
 end
+
 return esplibrary
