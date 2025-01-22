@@ -104,8 +104,6 @@ function esplibrary:createESP(target)
     game:GetService("RunService").RenderStepped:Connect(function()
       
         
-        -- Ensure both parts exist
-        if not humanoidRootPart or not head then return end
         
         local Dimensions = { target.HumanoidRootPart, target.Head, target["Left Arm"], target["Right Arm"], target["Left Leg"], target["Right Leg"] } -- Parts we are using to calculate the bounds
         
