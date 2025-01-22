@@ -1,3 +1,8 @@
+-- | ESP Library
+-- Repeat wait until the game loads
+repeat task.wait() until game:IsLoaded()
+
+-- | SERVICES
 local players = game:GetService("Players")
 local runService = game:GetService("RunService")
 local camera = workspace.CurrentCamera
@@ -9,7 +14,8 @@ ESP.Settings = {
     NameDisplay = true,
     DistanceDisplay = true,
     HealthBar = true,
-    BoxDisplay = true
+    BoxDisplay = true,
+    Outline = true
 }
 
 -- | Helper Functions
@@ -55,6 +61,12 @@ function ESP:AddObject(object)
             Filled = false,
             Visible = true
         }) or nil,
+        BoxOutline = ESP.Settings.Outline and createDrawing("Square", {
+            Thickness = 3,
+            Color = Color3.fromRGB(0, 0, 0),
+            Filled = false,
+            Visible = true
+        }) or nil,
         Name = ESP.Settings.NameDisplay and createDrawing("Text", {
             Size = 16,
             Center = true,
@@ -70,8 +82,13 @@ function ESP:AddObject(object)
             Visible = true
         }) or nil,
         HealthBar = ESP.Settings.HealthBar and createDrawing("Line", {
-            Thickness = 2,
+            Thickness = 4,
             Color = Color3.fromRGB(0, 255, 0),
+            Visible = true
+        }) or nil,
+        HealthBarOutline = ESP.Settings.Outline and createDrawing("Line", {
+            Thickness = 6,
+            Color = Color3.fromRGB(0, 0, 0),
             Visible = true
         }) or nil
     }
@@ -103,19 +120,26 @@ runService.RenderStepped:Connect(function()
             local distance = getDistance(part)
 
             if espObject.Box then
-                espObject.Box.Visible = onScreen
-                if onScreen then
-                    local size = (camera:WorldToViewportPoint(part.Position + Vector3.new(1, 3, 0)) - camera:WorldToViewportPoint(part.Position - Vector3.new(1, 3, 0))).Magnitude
-                    espObject.Box.Size = Vector2.new(size, size * 2)
-                    espObject.Box.Position = Vector2.new(screenPosition.X - size / 2, screenPosition.Y - size)
+                local size = (camera:WorldToViewportPoint(part.Position + Vector3.new(1, 3, 0)) - camera:WorldToViewportPoint(part.Position - Vector3.new(1, 3, 0))).Magnitude
+                local boxPosition = Vector2.new(screenPosition.X - size / 2, screenPosition.Y - size)
+                local boxSize = Vector2.new(size, size * 2)
+
+                if espObject.BoxOutline then
+                    espObject.BoxOutline.Visible = onScreen
+                    espObject.BoxOutline.Position = boxPosition
+                    espObject.BoxOutline.Size = boxSize
                 end
+
+                espObject.Box.Visible = onScreen
+                espObject.Box.Position = boxPosition
+                espObject.Box.Size = boxSize
             end
 
             if espObject.Name then
                 espObject.Name.Visible = onScreen
                 if onScreen then
                     espObject.Name.Text = part.Parent.Name
-                    espObject.Name.Position = Vector2.new(screenPosition.X, screenPosition.Y - 20)
+                    espObject.Name.Position = Vector2.new(screenPosition.X, screenPosition.Y - size * 1.2)
                 end
             end
 
@@ -123,21 +147,25 @@ runService.RenderStepped:Connect(function()
                 espObject.Distance.Visible = onScreen
                 if onScreen then
                     espObject.Distance.Text = string.format("%.1f studs", distance)
-                    espObject.Distance.Position = Vector2.new(screenPosition.X, screenPosition.Y + 20)
+                    espObject.Distance.Position = Vector2.new(screenPosition.X, screenPosition.Y + size * 1.2)
                 end
             end
 
             if espObject.HealthBar and part.Parent:FindFirstChildOfClass("Humanoid") then
                 local humanoid = part.Parent:FindFirstChildOfClass("Humanoid")
                 local health = humanoid.Health / humanoid.MaxHealth
-                local barStart = Vector2.new(screenPosition.X - 25, screenPosition.Y - 50)
-                local barEnd = Vector2.new(screenPosition.X - 25, screenPosition.Y - 50 + (100 * health))
+                local barStart = Vector2.new(screenPosition.X - size / 2 - 10, screenPosition.Y - size)
+                local barEnd = Vector2.new(screenPosition.X - size / 2 - 10, screenPosition.Y - size + (size * 2 * health))
+
+                if espObject.HealthBarOutline then
+                    espObject.HealthBarOutline.Visible = onScreen
+                    espObject.HealthBarOutline.From = Vector2.new(barStart.X - 1, screenPosition.Y - size - 1)
+                    espObject.HealthBarOutline.To = Vector2.new(barStart.X - 1, screenPosition.Y + size * 2 + 1)
+                end
 
                 espObject.HealthBar.Visible = onScreen
-                if onScreen then
-                    espObject.HealthBar.From = barStart
-                    espObject.HealthBar.To = barEnd
-                end
+                espObject.HealthBar.From = barStart
+                espObject.HealthBar.To = barEnd
             end
         else
             ESP:RemoveObject(espObject.Object)
