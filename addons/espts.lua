@@ -101,10 +101,14 @@ function esplibrary:createESP(target)
 
     -- Update function to continuously update ESP
     game:GetService("RunService").RenderStepped:Connect(function()
-        -- Get the world position of the target character
+        -- Get the world position and bounds of the target character
         local targetPosition = target.HumanoidRootPart.Position
-        local size = target.HumanoidRootPart.Size
-
+        local humanoid = target:FindFirstChild("Humanoid")
+        
+        -- Get the size of the character model (HumanoidRootPart)
+        local size = target:GetExtentsSize()
+        local width, height, depth = size.X, size.Y, size.Z
+        
         -- Use WorldToViewportPoint for screen space position
         local screenPosition, onScreen = workspace.CurrentCamera:WorldToViewportPoint(targetPosition)
         
@@ -122,16 +126,17 @@ function esplibrary:createESP(target)
         -- Calculate the box position based on the target's world position
         local position = Vector2.new(screenPosition.X, screenPosition.Y)
 
-        -- Box (Adjusts to the size of the character)
+        -- Adjust the box size to fit around the character's model
         if esplibrary.settings.box.enabled then
             box.Visible = true
-            box.Size = Vector2.new(size.X, size.Y)
+            -- Adjust the box size to better fit the model dimensions
+            box.Size = Vector2.new(width, height)
             box.Position = position
 
             -- Outline (Adjusts size slightly larger than the box)
             if esplibrary.settings.box.outline then
                 outline.Visible = true
-                outline.Size = Vector2.new(size.X + 2, size.Y + 2)
+                outline.Size = Vector2.new(width + 2, height + 2)
                 outline.Position = position - Vector2.new(2, 2)
                 outline.Color = esplibrary.settings.box.outlineColor
             else
@@ -154,8 +159,8 @@ function esplibrary:createESP(target)
 
         -- Healthbar
         if esplibrary.settings.healthbar.enabled then
-            local healthHeight = 50  -- Example size
-            local healthPosition = Vector2.new(position.X + size.X / 2 + 10, position.Y)
+            local healthHeight = humanoid.Health / humanoid.MaxHealth * height  -- Dynamic healthbar size based on character height
+            local healthPosition = Vector2.new(position.X + width / 2 + 10, position.Y)
 
             healthbar.Visible = true
             healthbar.From = healthPosition
@@ -168,7 +173,7 @@ function esplibrary:createESP(target)
         -- Username text
         if esplibrary.settings.text.enabled then
             usernameText.Visible = true
-            usernameText.Position = Vector2.new(position.X, position.Y - size.Y / 2 - 10)
+            usernameText.Position = Vector2.new(position.X, position.Y - height / 2 - 10)
             usernameText.Text = target.Name
             usernameText.Color = esplibrary.settings.text.color
         else
@@ -179,7 +184,7 @@ function esplibrary:createESP(target)
         if esplibrary.settings.distance.enabled then
             local distance = math.floor(getDistanceToTarget(target))
             distanceText.Visible = true
-            distanceText.Position = Vector2.new(position.X, position.Y + size.Y / 2 + 10)
+            distanceText.Position = Vector2.new(position.X, position.Y + height / 2 + 10)
             distanceText.Text = tostring(distance) .. "m"
             distanceText.Color = esplibrary.settings.distance.color
         else
