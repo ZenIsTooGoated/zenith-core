@@ -123,27 +123,23 @@ runService.RenderStepped:Connect(function()
                 local size = (camera:WorldToViewportPoint(part.Position + Vector3.new(1, 3, 0)) - camera:WorldToViewportPoint(part.Position - Vector3.new(1, 3, 0))).Magnitude
                 local boxPosition = Vector2.new(screenPosition.X - size / 2, screenPosition.Y - size)
                 local boxSize = Vector2.new(size, size * 2)
-            
+
                 if espObject.BoxOutline then
                     espObject.BoxOutline.Visible = onScreen
                     espObject.BoxOutline.Position = boxPosition
                     espObject.BoxOutline.Size = boxSize
                 end
-            
+
                 espObject.Box.Visible = onScreen
                 espObject.Box.Position = boxPosition
                 espObject.Box.Size = boxSize
-            
-               
-              
             end
-            
 
             if espObject.Name then
                 espObject.Name.Visible = onScreen
                 if onScreen then
                     espObject.Name.Text = part.Parent.Name
-                    espObject.Name.Position = Vector2.new(screenPosition.X, screenPosition.Y - size * 1.2)
+                    espObject.Name.Position = Vector2.new(screenPosition.X, screenPosition.Y - size)
                 end
             end
 
