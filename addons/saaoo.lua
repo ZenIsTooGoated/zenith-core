@@ -102,26 +102,33 @@ function espLibrary:createEsp(target)
 
     -- Update function to continuously update ESP
     game:GetService("RunService").RenderStepped:Connect(function()
-        local dimensions = { target.HumanoidRootPart, target.Head, target["Left Arm"], target["Right Arm"], target["Left Leg"], target["Right Leg"] } -- Parts we are using to calculate the bounds
+        -- Dimensions array includes all the major body parts (head, arms, legs, torso, etc.)
+        local dimensions = { 
+            target.HumanoidRootPart, target.Head, target["Left Arm"], target["Right Arm"], 
+            target["Left Leg"], target["Right Leg"], target["UpperTorso"], target["LowerTorso"] 
+        }
         
+        -- Variables to track min/max screen coordinates
         local yMinimal, yMaximal = camera.ViewportSize.Y, 0
         local xMinimal, xMaximal = camera.ViewportSize.X, 0
 
         -- Loop through each part and calculate the min/max screen position
         for _, part in pairs(dimensions) do
-            local screenPos = camera:WorldToViewportPoint(part.Position)
-            local x, y = screenPos.X, screenPos.Y
-            if x < xMinimal then 
-                xMinimal = x
-            end
-            if x > xMaximal then 
-                xMaximal = x
-            end
-            if y < yMinimal then 
-                yMinimal = y
-            end
-            if y > yMaximal then
-                yMaximal = y
+            if part and part:FindFirstChild("HumanoidRootPart") then
+                local screenPos = camera:WorldToViewportPoint(part.Position)
+                local x, y = screenPos.X, screenPos.Y
+                if x < xMinimal then 
+                    xMinimal = x
+                end
+                if x > xMaximal then 
+                    xMaximal = x
+                end
+                if y < yMinimal then 
+                    yMinimal = y
+                end
+                if y > yMaximal then
+                    yMaximal = y
+                end
             end
         end
 
