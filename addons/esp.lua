@@ -1,133 +1,124 @@
-local espLib = {}
-espLib.settings = {
-    box = true,
-    name = true,
-    distance = true,
-    tracers = true,
-    outlines = true,
-    font = Drawing.Fonts.Plex,
-    debug = false
+local EspLib = {}
+EspLib.__index = EspLib
+
+-- | SETTINGS
+
+EspLib.settings = {
+    box = true,               -- Enable box
+    name = true,              -- Enable name display
+    distance = true,          -- Enable distance display
+    health = true,            -- Enable health bar
+    tracers = true,           -- Enable tracers to the player
+    outlines = true,          -- Enable outlines for all ESP elements
 }
 
--- | Utility Functions
-local function createDrawing(type, properties)
-    local drawing = Drawing.new(type)
-    for prop, value in pairs(properties) do
-        drawing[prop] = value
+-- | SERVICES
+
+local Players = game.Players
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+
+-- | UTILITY FUNCTIONS
+
+-- Function to check if a position is on screen
+local function isOnScreen(position)
+    local viewportPosition, onScreen = Camera:WorldToViewportPoint(position)
+    return onScreen
+end
+
+-- Function to create and return a drawing for text
+local function createText(label)
+    local text = Drawing.new("Text")
+    text.Text = label
+    text.Font = Drawing.Fonts.Plex
+    text.Size = 15
+    text.Color = Color3.fromRGB(255, 255, 255)
+    text.Outline = true
+    text.OutlineColor = Color3.fromRGB(0, 0, 0)
+    return text
+end
+
+-- Function to create and return a drawing for health bar
+local function createHealthBar(position, health)
+    local healthBar = Drawing.new("Rectangle")
+    healthBar.Position = position
+    healthBar.Size = Vector2.new(10, 50)
+    healthBar.Color = Color3.fromRGB(0, 255, 0)
+    healthBar.Outline = EspLib.settings.outlines
+    healthBar.OutlineColor = Color3.fromRGB(0, 0, 0)
+    healthBar.Filled = true
+    healthBar.Size = Vector2.new(10, health)
+    return healthBar
+end
+
+-- | ESP HANDLER
+
+function EspLib:createEsp(player)
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+    local rootPart = char:WaitForChild("HumanoidRootPart")
+    local head = char:FindFirstChild("Head")
+
+    local espElements = {}
+
+    -- Name
+    if EspLib.settings.name then
+        local nameText = createText(player.Name)
+        table.insert(espElements, nameText)
     end
-    return drawing
-end
 
-local function worldToViewportPoint(position)
-    local camera = workspace.CurrentCamera
-    local viewportPoint, onScreen = camera:WorldToViewportPoint(position)
-    return Vector2.new(viewportPoint.X, viewportPoint.Y), onScreen
-end
-
--- | Debug Log
-local function debugLog(message)
-    if espLib.settings.debug then
-        print(message)
+    -- Distance
+    if EspLib.settings.distance then
+        local distanceText = createText(math.floor((rootPart.Position - Camera.CFrame.Position).Magnitude) .. " studs")
+        distanceText.Position = Vector2.new(0, 20)
+        table.insert(espElements, distanceText)
     end
-end
 
--- | ESP Creation Function
-function espLib.createEsp(target)
-    local espObjects = {}
+    -- Health Bar
+    if EspLib.settings.health then
+        local healthBar = createHealthBar(Vector2.new(0, 40), math.clamp(char:FindFirstChildOfClass("Humanoid").Health / 100 * 50, 0, 50))
+        table.insert(espElements, healthBar)
+    end
 
-    -- Main ESP Elements
-    espObjects.name = createDrawing("Text", {
-        Color = Color3.new(1, 1, 1),
-        Size = 18,
-        Font = espLib.settings.font,
-        Outline = espLib.settings.outlines,
-        Visible = false,
-    })
+    -- Tracer
+    if EspLib.settings.tracers then
+        local tracer = Drawing.new("Line")
+        tracer.From = Camera:WorldToViewportPoint(Camera.CFrame.Position)
+        tracer.To = Camera:WorldToViewportPoint(rootPart.Position)
+        tracer.Color = Color3.fromRGB(255, 255, 255)
+        tracer.Thickness = 1
+        table.insert(espElements, tracer)
+    end
 
-    espObjects.box = createDrawing("Square", {
-        Thickness = 1,
-        Color = Color3.new(1, 1, 1),
-        Filled = false,
-        Visible = false,
-    })
+    -- Box
+    if EspLib.settings.box then
+        local boxOutline = Drawing.new("Rectangle")
+        boxOutline.Color = Color3.fromRGB(255, 255, 255)
+        boxOutline.Outline = true
+        boxOutline.OutlineColor = Color3.fromRGB(0, 0, 0)
+        boxOutline.Filled = false
+        table.insert(espElements, boxOutline)
+    end
 
-    espObjects.boxOutline = createDrawing("Square", {
-        Thickness = 2,
-        Color = Color3.new(0, 0, 0),
-        Filled = false,
-        Visible = false,
-    })
-
-    espObjects.distance = createDrawing("Text", {
-        Color = Color3.new(1, 1, 1),
-        Size = 18,
-        Font = espLib.settings.font,
-        Outline = espLib.settings.outlines,
-        Visible = false,
-    })
-
-    -- | Update ESP for Target
-    function espObjects:updateEsp()
-        if not target or not target:IsDescendantOf(workspace) then
-            self:removeEsp()
-            return
-        end
-
-        local rootPart = target:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            local screenPos, onScreen = worldToViewportPoint(rootPart.Position)
-
-            -- Update Name
-            if espLib.settings.name then
-                self.name.Text = target.Name
-                self.name.Position = screenPos - Vector2.new(self.name.TextBounds.X / 2, 20)
-                self.name.Visible = onScreen
-            end
-
-            -- Update Box and Outline
-            if espLib.settings.box then
-                local boxSize = Vector2.new(50, 100)
-                local boxPos = screenPos - boxSize / 2
-                self.box.Size = boxSize
-                self.box.Position = boxPos
-                self.box.Visible = onScreen
-
-                self.boxOutline.Size = boxSize
-                self.boxOutline.Position = boxPos
-                self.boxOutline.Visible = onScreen
-            end
-
-            -- Update Distance
-            if espLib.settings.distance then
-                local distance = (workspace.CurrentCamera.CFrame.Position - rootPart.Position).Magnitude
-                self.distance.Text = string.format("%.0f studs", distance)
-                self.distance.Position = screenPos + Vector2.new(-self.distance.TextBounds.X / 2, 120)
-                self.distance.Visible = onScreen
-            end
-
-            -- Update Tracers
-            if espLib.settings.tracers then
-                local tracerFrom = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                local tracerTo = screenPos
-                self.tracer.From = tracerFrom
-                self.tracer.To = tracerTo
-                self.tracer.Visible = onScreen
+    -- Update ESP elements every frame
+    RunService.RenderStepped:Connect(function()
+        local onScreen = isOnScreen(rootPart.Position)
+        if onScreen then
+            for _, element in ipairs(espElements) do
+                if element and element.Remove then
+                    element.Visible = true
+                end
             end
         else
-            self:removeEsp()
-        end
-    end
-
-    function espObjects:removeEsp()
-        for _, object in pairs(self) do
-            if typeof(object) == "Instance" then
-                object:Remove()
+            for _, element in ipairs(espElements) do
+                if element and element.Remove then
+                    element.Visible = false
+                end
             end
         end
-    end
-
-    return espObjects
+    end)
 end
 
--- Return the ESP library for usage
-return espLib
+-- Return the module
+return EspLib
