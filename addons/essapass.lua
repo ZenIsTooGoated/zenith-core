@@ -79,15 +79,31 @@ function EspLib:createEsp(player)
     local head = char:FindFirstChild("Head")
     local espElements = {}
 
+    -- Position the ESP elements
+    local function getScreenPosition(worldPosition)
+        local viewportPosition, onScreen = Camera:WorldToViewportPoint(worldPosition)
+        if onScreen then
+            return Vector2.new(viewportPosition.X, viewportPosition.Y)
+        end
+        return nil  -- If it's not on screen, return nil
+    end
+
     if EspLib.settings.name then
         local nameText = createText(player.Name)
-        table.insert(espElements, nameText)
+        local screenPos = getScreenPosition(rootPart.Position)
+        if screenPos then
+            nameText.Position = screenPos + Vector2.new(0, -40)  -- Adjust Y position for spacing
+            table.insert(espElements, nameText)
+        end
     end
 
     if EspLib.settings.distance then
         local distanceText = createText(math.floor((rootPart.Position - Camera.CFrame.Position).Magnitude) .. " studs")
-        distanceText.Position = Vector2.new(0, 20)
-        table.insert(espElements, distanceText)
+        local screenPos = getScreenPosition(rootPart.Position)
+        if screenPos then
+            distanceText.Position = screenPos + Vector2.new(0, -20)  -- Adjust Y position for spacing
+            table.insert(espElements, distanceText)
+        end
     end
 
     -- Tracer
@@ -98,9 +114,12 @@ function EspLib:createEsp(player)
 
     -- Box (both filled and outline)
     if EspLib.settings.box then
-        local boxOutline, boxFilled = createBox(Vector2.new(0, 40), Vector2.new(50, 100))  -- Example size
-        table.insert(espElements, boxOutline)
-        table.insert(espElements, boxFilled)
+        local screenPos = getScreenPosition(rootPart.Position)
+        if screenPos then
+            local boxOutline, boxFilled = createBox(screenPos + Vector2.new(-25, -50), Vector2.new(50, 100))  -- Example size and position
+            table.insert(espElements, boxOutline)
+            table.insert(espElements, boxFilled)
+        end
     end
 
     -- Debugging option: Print details
@@ -123,6 +142,7 @@ function EspLib:createEsp(player)
         end
     end)
 end
+
 
 -- Return the module
 return EspLib
