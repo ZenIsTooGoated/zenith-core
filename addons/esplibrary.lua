@@ -195,7 +195,7 @@ function espLib.createPlayerEsp(player)
     local espObjects
     player.CharacterAdded:Connect(function(character)
         local rootPart = character:WaitForChild("HumanoidRootPart")
-        espObjects = espLib.createEsp(rootPart)
+        espObjects = espLib.createEsp(character)
         
         local function playerLeaving()
             if espObjects then
