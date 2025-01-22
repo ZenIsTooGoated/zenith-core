@@ -19,10 +19,10 @@ local RunService = game:GetService("RunService")
 
 -- | UTILITY FUNCTIONS
 
--- Function to check if a position is on screen
-local function isOnScreen(position)
-    local viewportPosition, onScreen = Camera:WorldToViewportPoint(position)
-    return onScreen
+-- World to screen conversion function
+local function worldToScreen(world)
+    local screenPosition, inBounds = Camera:WorldToViewportPoint(world)
+    return Vector2.new(screenPosition.X, screenPosition.Y), inBounds, screenPosition.Z
 end
 
 -- Function to create and return a drawing for text
