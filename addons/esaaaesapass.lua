@@ -40,10 +40,10 @@ end
 
 -- Function to create and return a drawing for box (outline and size based on character)
 local function createBox(position, size)
-    -- Outline box (larger than the filled box)
+    -- Outline box (slightly larger than the filled box)
     local boxOutline = Drawing.new("Square")
     boxOutline.Position = position
-    boxOutline.Size = size + Vector2.new(10, 10)  -- Making the outline slightly bigger
+    boxOutline.Size = size + Vector2.new(10, 10)  -- Outline is slightly bigger
     boxOutline.Color = Color3.fromRGB(255, 255, 255)  -- White outline color
     boxOutline.Filled = false
     boxOutline.OutlineColor = Color3.fromRGB(0, 0, 0)  -- Black outline color
@@ -69,6 +69,41 @@ local function createTracer(fromPos, toPos)
     return tracer
 end
 
+-- Function to calculate the corners of a bounding box based on CFrame and size
+local function calculateCorners(cframe, size)
+    local VERTICES = {
+        Vector3.new(-0.5, 0.5, -0.5),
+        Vector3.new(0.5, 0.5, -0.5),
+        Vector3.new(-0.5, 0.5, 0.5),
+        Vector3.new(0.5, 0.5, 0.5),
+        Vector3.new(-0.5, -0.5, -0.5),
+        Vector3.new(0.5, -0.5, -0.5),
+        Vector3.new(-0.5, -0.5, 0.5),
+        Vector3.new(0.5, -0.5, 0.5)
+    }
+    
+    local corners = {}
+    for i = 1, #VERTICES do
+        table.insert(corners, (cframe + size * VERTICES[i]).Position)
+    end
+
+    local min = Vector3.new(math.huge, math.huge, math.huge)
+    local max = Vector3.new(-math.huge, -math.huge, -math.huge)
+    
+    for _, corner in ipairs(corners) do
+        min = Vector3.new(math.min(min.X, corner.X), math.min(min.Y, corner.Y), math.min(min.Z, corner.Z))
+        max = Vector3.new(math.max(max.X, corner.X), math.max(max.Y, corner.Y), math.max(max.Z, corner.Z))
+    end
+    
+    local topLeft = Camera:WorldToViewportPoint(Vector3.new(min.X, max.Y, min.Z))
+    local bottomRight = Camera:WorldToViewportPoint(Vector3.new(max.X, min.Y, max.Z))
+
+    return {
+        topLeft = Vector2.new(topLeft.X, topLeft.Y),
+        bottomRight = Vector2.new(bottomRight.X, bottomRight.Y)
+    }
+end
+
 -- | ESP HANDLER
 
 function EspLib:createEsp(player)
@@ -80,39 +115,7 @@ function EspLib:createEsp(player)
     local humanoid = char:FindFirstChild("Humanoid")
     local espElements = {}
 
-    -- Calculate the character's full bounding size based on its parts
-    local function getCharacterSize(character)
-        local headSize = head.Size
-        local humanoidRootPartSize = rootPart.Size
-        local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("LowerTorso")
-        local size = Vector3.new(0, 0, 0)
-
-        if head then
-            size = size + Vector3.new(headSize.X, headSize.Y, headSize.Z)
-        end
-        if humanoidRootPart then
-            size = size + Vector3.new(humanoidRootPartSize.X, humanoidRootPartSize.Y, humanoidRootPartSize.Z)
-        end
-        if torso then
-            size = size + Vector3.new(torso.Size.X, torso.Size.Y, torso.Size.Z)
-        end
-
-        -- Return the full size of the character
-        return size
-    end
-
-    local characterSize = getCharacterSize(char)
-
     -- Position the ESP elements
-    local function getScreenPosition(worldPosition)
-        local viewportPosition, onScreen = Camera:WorldToViewportPoint(worldPosition)
-        if onScreen then
-            return Vector2.new(viewportPosition.X, viewportPosition.Y)
-        end
-        return nil  -- If it's not on screen, return nil
-    end
-
-    -- Creating ESP elements for the player
     local nameText, distanceText, tracer, boxOutline, box
 
     if EspLib.settings.name then
@@ -133,16 +136,9 @@ function EspLib:createEsp(player)
 
     -- Box (both outline and regular box)
     if EspLib.settings.box then
-        boxOutline, box = createBox(Vector2.new(0, 0), Vector2.new(characterSize.X, characterSize.Y))  -- Use character size
+        boxOutline, box = createBox(Vector2.new(0, 0), Vector2.new(100, 100))  -- Placeholder size until we calculate the corners
         table.insert(espElements, boxOutline)
         table.insert(espElements, box)
-    end
-
-    -- Debugging option: Print details
-    if EspLib.settings.debug then
-        print("ESP Created for " .. player.Name)
-        print("Position: " .. tostring(rootPart.Position))
-        print("Number of ESP elements: " .. #espElements)
     end
 
     -- Update ESP elements every frame
@@ -160,43 +156,34 @@ function EspLib:createEsp(player)
             return
         end
         
-        local screenPos = getScreenPosition(rootPart.Position)
+        local corners = calculateCorners(rootPart.CFrame, rootPart.Size)
         
-        if EspLib.settings.debug then
-            print("Updating ESP elements for " .. player.Name)
+        -- Update position and size for each element
+        if EspLib.settings.name then
+            nameText.Position = corners.topLeft + Vector2.new(0, -40)  -- Adjust Y position for spacing
         end
 
-        if screenPos then
-            -- Update position for each element
-            if EspLib.settings.name then
-                nameText.Position = screenPos + Vector2.new(0, -40)  -- Adjust Y position for spacing
-            end
+        if EspLib.settings.distance then
+            distanceText.Position = corners.topLeft + Vector2.new(0, 20)  -- Adjust Y position for spacing
+        end
 
-            if EspLib.settings.distance then
-                distanceText.Position = screenPos + Vector2.new(0, 20)  -- Adjust Y position for spacing
-            end
+        -- Update tracer
+        if EspLib.settings.tracers then
+            tracer.From = Camera:WorldToViewportPoint(Camera.CFrame.Position)
+            tracer.To = Camera:WorldToViewportPoint(rootPart.Position)
+        end
 
-            -- Update tracer
-            if EspLib.settings.tracers then
-                tracer.From = Camera:WorldToViewportPoint(Camera.CFrame.Position)
-                tracer.To = Camera:WorldToViewportPoint(rootPart.Position)
-            end
+        -- Update box (both outline and regular box)
+        if EspLib.settings.box then
+            boxOutline.Position = corners.topLeft
+            boxOutline.Size = corners.bottomRight - corners.topLeft
+            box.Position = corners.topLeft
+            box.Size = corners.bottomRight - corners.topLeft
+        end
 
-            -- Update box (both outline and regular box)
-            if EspLib.settings.box then
-                boxOutline.Position = screenPos + Vector2.new(-characterSize.X / 2, -characterSize.Y / 2)  -- Adjust position around the player
-                box.Position = screenPos + Vector2.new(-characterSize.X / 2, -characterSize.Y / 2)  -- Same position as outline, but filled
-            end
-
-            -- Make sure the ESP elements are visible
-            for _, element in ipairs(espElements) do
-                element.Visible = true
-            end
-        else
-            -- Hide all ESP elements if the player is off-screen
-            for _, element in ipairs(espElements) do
-                element.Visible = false
-            end
+        -- Make sure the ESP elements are visible
+        for _, element in ipairs(espElements) do
+            element.Visible = true
         end
     end)
 
