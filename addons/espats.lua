@@ -1,5 +1,3 @@
--- Example of a full ESP setup for players using the Drawing API
-
 local esplibrary = {}
 esplibrary.settings = {}
 
@@ -38,6 +36,9 @@ local function getDistanceToTarget(target)
     local playerPosition = player.Character.HumanoidRootPart.Position
     return (targetPosition - playerPosition).Magnitude
 end
+
+-- Get the Camera object
+local Camera = workspace.CurrentCamera
 
 function esplibrary:createESP(target)
     -- Ensure the target has a HumanoidRootPart
@@ -101,19 +102,42 @@ function esplibrary:createESP(target)
 
     -- Update function to continuously update ESP
     game:GetService("RunService").RenderStepped:Connect(function()
-        -- Get the world position and bounds of the target character
-        local targetPosition = target.HumanoidRootPart.Position
-        local humanoid = target:FindFirstChild("Humanoid")
+        -- Get the world position of key parts for bounding box calculation
+        local humanoidRootPart = target.HumanoidRootPart
+        local head = target:FindFirstChild("Head")
         
-        -- Get the size of the character model (HumanoidRootPart)
-        local size = target:GetExtentsSize()
-        local width, height, depth = size.X, size.Y, size.Z
+        -- Ensure both parts exist
+        if not humanoidRootPart or not head then return end
         
-        -- Use WorldToViewportPoint for screen space position
-        local screenPosition, onScreen = workspace.CurrentCamera:WorldToViewportPoint(targetPosition)
+        local Dimensions = { humanoidRootPart, head } -- Parts we are using to calculate the bounds
         
+        local Y_Minimal, Y_Maximal = Camera.ViewportSize.Y, 0
+        local X_Minimal, X_Maximal = Camera.ViewportSize.X, 0
+
+        -- Loop through each part and calculate the min/max screen position
+        for _, part in pairs(Dimensions) do
+            local screenPos = Camera:WorldToViewportPoint(part.Position)
+            local X, Y = screenPos.X, screenPos.Y
+            if X < X_Minimal then 
+                X_Minimal = X
+            end
+            if X > X_Maximal then 
+                X_Maximal = X
+            end
+            if Y < Y_Minimal then 
+                Y_Minimal = Y
+            end
+            if Y > Y_Maximal then
+                Y_Maximal = Y
+            end
+        end
+
+        -- Calculate the box size based on min/max values
+        local boxSize = Vector2.new(X_Maximal - X_Minimal, Y_Maximal - Y_Minimal)
+        local boxPosition = Vector2.new(X_Minimal, Y_Minimal)
+
         -- If the target is off-screen, hide the ESP elements
-        if not onScreen then
+        if X_Minimal == Camera.ViewportSize.X or X_Maximal == 0 or Y_Minimal == Camera.ViewportSize.Y or Y_Maximal == 0 then
             box.Visible = false
             outline.Visible = false
             tracer.Visible = false
@@ -123,21 +147,17 @@ function esplibrary:createESP(target)
             return
         end
 
-        -- Calculate the box position based on the target's world position
-        local position = Vector2.new(screenPosition.X, screenPosition.Y)
-
-        -- Adjust the box size to fit around the character's model
+        -- Box visibility and size update
         if esplibrary.settings.box.enabled then
             box.Visible = true
-            -- Adjust the box size to better fit the model dimensions
-            box.Size = Vector2.new(width, height)
-            box.Position = position
+            box.Size = boxSize
+            box.Position = boxPosition
 
-            -- Outline (Adjusts size slightly larger than the box)
+            -- Outline (slightly larger than the box)
             if esplibrary.settings.box.outline then
                 outline.Visible = true
-                outline.Size = Vector2.new(width + 2, height + 2)
-                outline.Position = position - Vector2.new(2, 2)
+                outline.Size = boxSize + Vector2.new(2, 2)
+                outline.Position = boxPosition - Vector2.new(2, 2)
                 outline.Color = esplibrary.settings.box.outlineColor
             else
                 outline.Visible = false
@@ -150,30 +170,17 @@ function esplibrary:createESP(target)
         -- Tracer
         if esplibrary.settings.tracer.enabled then
             tracer.Visible = true
-            tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-            tracer.To = position
+            tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+            tracer.To = boxPosition + boxSize / 2
             tracer.Color = esplibrary.settings.tracer.color
         else
             tracer.Visible = false
         end
 
-        -- Healthbar
-        if esplibrary.settings.healthbar.enabled then
-            local healthHeight = humanoid.Health / humanoid.MaxHealth * height  -- Dynamic healthbar size based on character height
-            local healthPosition = Vector2.new(position.X + width / 2 + 10, position.Y)
-
-            healthbar.Visible = true
-            healthbar.From = healthPosition
-            healthbar.To = healthPosition + Vector2.new(0, -healthHeight)
-            healthbar.Color = esplibrary.settings.healthbar.color
-        else
-            healthbar.Visible = false
-        end
-
         -- Username text
         if esplibrary.settings.text.enabled then
             usernameText.Visible = true
-            usernameText.Position = Vector2.new(position.X, position.Y - height / 2 - 10)
+            usernameText.Position = boxPosition - Vector2.new(0, 20)
             usernameText.Text = target.Name
             usernameText.Color = esplibrary.settings.text.color
         else
@@ -184,7 +191,7 @@ function esplibrary:createESP(target)
         if esplibrary.settings.distance.enabled then
             local distance = math.floor(getDistanceToTarget(target))
             distanceText.Visible = true
-            distanceText.Position = Vector2.new(position.X, position.Y + height / 2 + 10)
+            distanceText.Position = boxPosition + boxSize + Vector2.new(0, 10)
             distanceText.Text = tostring(distance) .. "m"
             distanceText.Color = esplibrary.settings.distance.color
         else
