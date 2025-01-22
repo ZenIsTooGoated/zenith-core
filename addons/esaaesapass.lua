@@ -77,7 +77,31 @@ function EspLib:createEsp(player)
 
     local rootPart = char:WaitForChild("HumanoidRootPart")
     local head = char:FindFirstChild("Head")
+    local humanoid = char:FindFirstChild("Humanoid")
     local espElements = {}
+
+    -- Calculate the character's full bounding size based on its parts
+    local function getCharacterSize(character)
+        local headSize = head.Size
+        local humanoidRootPartSize = rootPart.Size
+        local torso = character:FindFirstChild("UpperTorso") or character:FindFirstChild("LowerTorso")
+        local size = Vector3.new(0, 0, 0)
+
+        if head then
+            size = size + Vector3.new(headSize.X, headSize.Y, headSize.Z)
+        end
+        if humanoidRootPart then
+            size = size + Vector3.new(humanoidRootPartSize.X, humanoidRootPartSize.Y, humanoidRootPartSize.Z)
+        end
+        if torso then
+            size = size + Vector3.new(torso.Size.X, torso.Size.Y, torso.Size.Z)
+        end
+
+        -- Return the full size of the character
+        return size
+    end
+
+    local characterSize = getCharacterSize(char)
 
     -- Position the ESP elements
     local function getScreenPosition(worldPosition)
@@ -109,7 +133,7 @@ function EspLib:createEsp(player)
 
     -- Box (both outline and regular box)
     if EspLib.settings.box then
-        boxOutline, box = createBox(Vector2.new(0, 0), Vector2.new(50, 100))  -- Example size
+        boxOutline, box = createBox(Vector2.new(0, 0), Vector2.new(characterSize.X, characterSize.Y))  -- Use character size
         table.insert(espElements, boxOutline)
         table.insert(espElements, box)
     end
@@ -160,8 +184,8 @@ function EspLib:createEsp(player)
 
             -- Update box (both outline and regular box)
             if EspLib.settings.box then
-                boxOutline.Position = screenPos + Vector2.new(-25, -50)  -- Adjust position around the player
-                box.Position = screenPos + Vector2.new(-25, -50)  -- Same position as outline, but filled
+                boxOutline.Position = screenPos + Vector2.new(-characterSize.X / 2, -characterSize.Y / 2)  -- Adjust position around the player
+                box.Position = screenPos + Vector2.new(-characterSize.X / 2, -characterSize.Y / 2)  -- Same position as outline, but filled
             end
 
             -- Make sure the ESP elements are visible
