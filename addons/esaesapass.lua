@@ -38,25 +38,25 @@ local function createText(label)
     return text
 end
 
--- Function to create and return a drawing for box (both filled and outline)
+-- Function to create and return a drawing for box (outline and size based on character)
 local function createBox(position, size)
-    -- Filled box
-    local boxFilled = Drawing.new("Square")
-    boxFilled.Position = position
-    boxFilled.Size = size
-    boxFilled.Color = Color3.fromRGB(0, 255, 0)  -- You can change this to any color you want
-    boxFilled.Filled = false
-    boxFilled.Outline = false  -- No outline for the filled box
-
-    -- Outline box
+    -- Outline box (larger than the filled box)
     local boxOutline = Drawing.new("Square")
     boxOutline.Position = position
-    boxOutline.Size = size
+    boxOutline.Size = size + Vector2.new(10, 10)  -- Making the outline slightly bigger
     boxOutline.Color = Color3.fromRGB(255, 255, 255)  -- White outline color
     boxOutline.Filled = false
     boxOutline.OutlineColor = Color3.fromRGB(0, 0, 0)  -- Black outline color
+    
+    -- Regular box (filled)
+    local box = Drawing.new("Square")
+    box.Position = position
+    box.Size = size
+    box.Color = Color3.fromRGB(0, 255, 0)  -- You can change this color
+    box.Filled = false  -- No fill
+    box.Outline = false
 
-    return boxOutline, boxFilled
+    return boxOutline, box
 end
 
 -- Function to create and return a drawing for tracer
@@ -89,7 +89,7 @@ function EspLib:createEsp(player)
     end
 
     -- Creating ESP elements for the player
-    local nameText, distanceText, tracer, boxOutline, boxFilled
+    local nameText, distanceText, tracer, boxOutline, box
 
     if EspLib.settings.name then
         nameText = createText(player.Name)
@@ -107,11 +107,11 @@ function EspLib:createEsp(player)
         table.insert(espElements, tracer)
     end
 
-    -- Box (both filled and outline)
+    -- Box (both outline and regular box)
     if EspLib.settings.box then
-        boxOutline, boxFilled = createBox(Vector2.new(0, 0), Vector2.new(50, 100))  -- Example size
+        boxOutline, box = createBox(Vector2.new(0, 0), Vector2.new(50, 100))  -- Example size
         table.insert(espElements, boxOutline)
-        table.insert(espElements, boxFilled)
+        table.insert(espElements, box)
     end
 
     -- Debugging option: Print details
@@ -122,7 +122,20 @@ function EspLib:createEsp(player)
     end
 
     -- Update ESP elements every frame
-    RunService.RenderStepped:Connect(function()
+    local espConnection
+    espConnection = RunService.RenderStepped:Connect(function()
+        -- Make sure the character still exists
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            -- Clean up ESP elements if character is destroyed
+            for _, element in ipairs(espElements) do
+                if element and element.Remove then
+                    element:Remove()
+                end
+            end
+            espConnection:Disconnect()
+            return
+        end
+        
         local screenPos = getScreenPosition(rootPart.Position)
         
         if EspLib.settings.debug then
@@ -136,7 +149,7 @@ function EspLib:createEsp(player)
             end
 
             if EspLib.settings.distance then
-                distanceText.Position = screenPos + Vector2.new(0, -20)  -- Adjust Y position for spacing
+                distanceText.Position = screenPos + Vector2.new(0, 20)  -- Adjust Y position for spacing
             end
 
             -- Update tracer
@@ -145,10 +158,10 @@ function EspLib:createEsp(player)
                 tracer.To = Camera:WorldToViewportPoint(rootPart.Position)
             end
 
-            -- Update box (both filled and outline)
+            -- Update box (both outline and regular box)
             if EspLib.settings.box then
                 boxOutline.Position = screenPos + Vector2.new(-25, -50)  -- Adjust position around the player
-                boxFilled.Position = screenPos + Vector2.new(-25, -50)  -- Same position as outline, but filled
+                box.Position = screenPos + Vector2.new(-25, -50)  -- Same position as outline, but filled
             end
 
             -- Make sure the ESP elements are visible
@@ -159,6 +172,25 @@ function EspLib:createEsp(player)
             -- Hide all ESP elements if the player is off-screen
             for _, element in ipairs(espElements) do
                 element.Visible = false
+            end
+        end
+    end)
+
+    -- Handle player character cleanup (when character is removed or player leaves)
+    player.CharacterRemoving:Connect(function()
+        for _, element in ipairs(espElements) do
+            if element and element.Remove then
+                element:Remove()
+            end
+        end
+        espConnection:Disconnect()
+    end)
+
+    -- Handle player removal (in case player leaves the game)
+    player.Removing:Connect(function()
+        for _, element in ipairs(espElements) do
+            if element and element.Remove then
+                element:Remove()
             end
         end
     end)
