@@ -28,6 +28,7 @@ end
 function espLib.createEsp(target)
     local espObjects = {}
 
+    -- Main ESP Elements
     espObjects.name = createDrawing("Text", {
         Color = Color3.new(1, 1, 1),
         Size = 18,
@@ -43,10 +44,24 @@ function espLib.createEsp(target)
         Visible = false,
     })
 
+    espObjects.boxOutline = createDrawing("Square", {
+        Thickness = 2,
+        Color = Color3.new(0, 0, 0),
+        Filled = false,
+        Visible = false,
+    })
+
     espObjects.healthBar = createDrawing("Square", {
-        Thickness = 1,
+        Thickness = 0,
         Filled = true,
         Color = Color3.new(0, 1, 0),
+        Visible = false,
+    })
+
+    espObjects.healthBarOutline = createDrawing("Square", {
+        Thickness = 2,
+        Color = Color3.new(0, 0, 0),
+        Filled = false,
         Visible = false,
     })
 
@@ -64,6 +79,7 @@ function espLib.createEsp(target)
         Visible = false,
     })
 
+    -- Local On-Screen Check
     local function isOnScreen(position)
         local _, onScreen = workspace.CurrentCamera:WorldToViewportPoint(position)
         return onScreen
@@ -84,38 +100,62 @@ function espLib.createEsp(target)
                 -- Update Name
                 if espLib.settings.name then
                     self.name.Text = target.Name
-                    self.name.Position = screenPos - Vector2.new(0, 30)
+                    self.name.Position = screenPos - Vector2.new(self.name.TextBounds.X / 2, 50)
                     self.name.Visible = true
                 else
                     self.name.Visible = false
                 end
 
-                -- Update Box
+                -- Update Box and Outline
                 if espLib.settings.box then
-                    local size = Vector2.new(50, 100) -- Arbitrary box size
-                    self.box.Size = size
-                    self.box.Position = screenPos - size / 2
+                    local boxSize = Vector2.new(50, 100)
+                    local boxPos = screenPos - boxSize / 2
+
+                    self.box.Size = boxSize
+                    self.box.Position = boxPos
                     self.box.Visible = true
+
+                    if espLib.settings.outlines then
+                        self.boxOutline.Size = boxSize
+                        self.boxOutline.Position = boxPos
+                        self.boxOutline.Visible = true
+                    else
+                        self.boxOutline.Visible = false
+                    end
                 else
                     self.box.Visible = false
+                    self.boxOutline.Visible = false
                 end
 
-                -- Update Health Bar
+                -- Update Health Bar and Outline
                 if espLib.settings.health then
                     local healthRatio = humanoid.Health / humanoid.MaxHealth
-                    self.healthBar.Size = Vector2.new(4, 100 * healthRatio)
-                    self.healthBar.Position = self.box.Position - Vector2.new(6, 0)
+                    local barHeight = 100 * healthRatio
+                    local barSize = Vector2.new(4, barHeight)
+                    local barPos = self.box.Position - Vector2.new(6, 0)
+
+                    self.healthBar.Size = barSize
+                    self.healthBar.Position = Vector2.new(barPos.X, barPos.Y + (100 - barHeight))
                     self.healthBar.Color = Color3.fromRGB(255 * (1 - healthRatio), 255 * healthRatio, 0)
                     self.healthBar.Visible = true
+
+                    if espLib.settings.outlines then
+                        self.healthBarOutline.Size = Vector2.new(4, 100)
+                        self.healthBarOutline.Position = barPos
+                        self.healthBarOutline.Visible = true
+                    else
+                        self.healthBarOutline.Visible = false
+                    end
                 else
                     self.healthBar.Visible = false
+                    self.healthBarOutline.Visible = false
                 end
 
                 -- Update Distance
                 if espLib.settings.distance then
                     local distance = (workspace.CurrentCamera.CFrame.Position - rootPart.Position).Magnitude
                     self.distance.Text = string.format("%.0f studs", distance)
-                    self.distance.Position = screenPos + Vector2.new(0, 40)
+                    self.distance.Position = screenPos + Vector2.new(-self.distance.TextBounds.X / 2, 60)
                     self.distance.Visible = true
                 else
                     self.distance.Visible = false
@@ -130,7 +170,7 @@ function espLib.createEsp(target)
                     self.tracer.Visible = false
                 end
             else
-                -- Set all ESP objects to invisible if off-screen
+                -- Hide all ESP elements if off-screen
                 for _, object in pairs(self) do
                     if typeof(object) == "Instance" then
                         object.Visible = false
