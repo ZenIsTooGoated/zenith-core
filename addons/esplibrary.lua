@@ -191,20 +191,25 @@ function espLib.createEsp(target)
     return espObjects
 end
 
--- | Automatic Player ESP
+-- | Automatic Player ESP (Now checks for HumanoidRootPart in Player's Character)
 function espLib.createPlayerEsp(player)
-    local espObjects = espLib.createEsp(player)
+    local espObjects
+    -- Create ESP only if player has a character
+    player.CharacterAdded:Connect(function(character)
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+        espObjects = espLib.createEsp(character)
+        
+        -- Automatically destroy ESP when player leaves or character is removed
+        local function playerLeaving()
+            if espObjects then
+                espObjects:removeEsp()
+            end
+        end
 
-    -- Automatically destroy ESP when player leaves or no longer exists
-    local function playerLeaving()
-        espObjects:removeEsp()
-    end
-
-    -- Automatically remove the ESP if the player leaves
-    player.OnDestroy = playerLeaving
-    player.CharacterRemoving:Connect(playerLeaving)
-
-    return espObjects
+        -- Automatically remove the ESP if the player leaves or character is removed
+        player.OnDestroy = playerLeaving
+        player.CharacterRemoving:Connect(playerLeaving)
+    end)
 end
 
 -- | Create ESP for all players if enabled
