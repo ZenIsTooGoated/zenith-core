@@ -7,7 +7,6 @@ EspLib.settings = {
     box = true,               -- Enable box
     name = true,              -- Enable name display
     distance = true,          -- Enable distance display
-    health = true,            -- Enable health bar
     tracers = true,           -- Enable tracers to the player
     outlines = true,          -- Enable outlines for all ESP elements
 }
@@ -38,18 +37,7 @@ local function createText(label)
     return text
 end
 
--- Function to create and return a drawing for health bar
-local function createHealthBar(position, health)
-    local healthBar = Drawing.new("Rectangle")
-    healthBar.Position = position
-    healthBar.Size = Vector2.new(10, 50)
-    healthBar.Color = Color3.fromRGB(0, 255, 0)
-    healthBar.Outline = EspLib.settings.outlines
-    healthBar.OutlineColor = Color3.fromRGB(0, 0, 0)
-    healthBar.Filled = true
-    healthBar.Size = Vector2.new(10, health)
-    return healthBar
-end
+
 
 -- | ESP HANDLER
 
@@ -62,24 +50,18 @@ function EspLib:createEsp(player)
 
     local espElements = {}
 
-    -- Name
     if EspLib.settings.name then
         local nameText = createText(player.Name)
         table.insert(espElements, nameText)
     end
 
-    -- Distance
     if EspLib.settings.distance then
         local distanceText = createText(math.floor((rootPart.Position - Camera.CFrame.Position).Magnitude) .. " studs")
         distanceText.Position = Vector2.new(0, 20)
         table.insert(espElements, distanceText)
     end
 
-    -- Health Bar
-    if EspLib.settings.health then
-        local healthBar = createHealthBar(Vector2.new(0, 40), math.clamp(char:FindFirstChildOfClass("Humanoid").Health / 100 * 50, 0, 50))
-        table.insert(espElements, healthBar)
-    end
+  
 
     -- Tracer
     if EspLib.settings.tracers then
@@ -93,7 +75,7 @@ function EspLib:createEsp(player)
 
     -- Box
     if EspLib.settings.box then
-        local boxOutline = Drawing.new("Rectangle")
+        local boxOutline = Drawing.new("Square")
         boxOutline.Color = Color3.fromRGB(255, 255, 255)
         boxOutline.Outline = true
         boxOutline.OutlineColor = Color3.fromRGB(0, 0, 0)
