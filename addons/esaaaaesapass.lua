@@ -156,7 +156,10 @@ function EspLib:createEsp(player)
             return
         end
         
-        local corners = calculateCorners(rootPart.CFrame, rootPart.Size)
+        -- Calculate the character's full bounds, not just the HumanoidRootPart
+        local charCFrame = char.PrimaryPart.CFrame
+        local charSize = char:GetExtentsSize()
+        local corners = calculateCorners(charCFrame, charSize)
         
         -- Update position and size for each element
         if EspLib.settings.name then
@@ -198,7 +201,7 @@ function EspLib:createEsp(player)
     end)
 
     -- Handle player removal (in case player leaves the game)
-    player.Removing:Connect(function()
+    player.PlayerRemoving:Connect(function()
         for _, element in ipairs(espElements) do
             if element and element.Remove then
                 element:Remove()
