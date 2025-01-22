@@ -145,11 +145,8 @@ function esplibrary:createESP(target)
 
         -- Box visibility and size update
         if esplibrary.settings.box.enabled then
-            box.Visible = true
-            box.Size = boxSize
-            box.Position = boxPosition
+           
 
-            -- Outline (slightly larger than the box)
             if esplibrary.settings.box.outline then
                 outline.Visible = true
                 outline.Size = boxSize
@@ -158,6 +155,10 @@ function esplibrary:createESP(target)
             else
                 outline.Visible = false
             end
+
+            box.Visible = true
+            box.Size = boxSize
+            box.Position = boxPosition
         else
             box.Visible = false
             outline.Visible = false
