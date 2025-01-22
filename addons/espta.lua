@@ -101,6 +101,7 @@ function esplibrary:createESP(target)
 
     -- Update function to continuously update ESP
     game:GetService("RunService").RenderStepped:Connect(function()
+        -- Get the 2D screen position of the character
         local screenPosition, onScreen = workspace.CurrentCamera:WorldToScreenPoint(target.HumanoidRootPart.Position)
         if not onScreen then
             box.Visible = false
@@ -112,16 +113,17 @@ function esplibrary:createESP(target)
             return
         end
 
+        -- Get the size of the character's HumanoidRootPart
         local size = target.HumanoidRootPart.Size
         local position = Vector2.new(screenPosition.X - size.X / 2, screenPosition.Y - size.Y / 2)
 
-        -- Box
+        -- Box (Adjusts to the size of the character)
         if esplibrary.settings.box.enabled then
             box.Visible = true
             box.Size = Vector2.new(size.X, size.Y)
             box.Position = position
 
-            -- Outline
+            -- Outline (Adjusts size slightly larger than the box)
             if esplibrary.settings.box.outline then
                 outline.Visible = true
                 outline.Size = Vector2.new(size.X + 2, size.Y + 2)
