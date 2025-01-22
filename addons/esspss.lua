@@ -9,6 +9,7 @@ EspLib.settings = {
     distance = true,          -- Enable distance display
     tracers = true,           -- Enable tracers to the player
     outlines = true,          -- Enable outlines for all ESP elements
+    debug = false,            -- Enable debugging (prints ESP status)
 }
 
 -- | SERVICES
@@ -37,7 +38,36 @@ local function createText(label)
     return text
 end
 
+-- Function to create and return a drawing for box (both filled and outline)
+local function createBox(position, size)
+    -- Filled box
+    local boxFilled = Drawing.new("Square")
+    boxFilled.Position = position
+    boxFilled.Size = size
+    boxFilled.Color = Color3.fromRGB(0, 255, 0)  -- You can change this to any color you want
+    boxFilled.Filled = true
+    boxFilled.Outline = false  -- No outline for the filled box
 
+    -- Outline box
+    local boxOutline = Drawing.new("Square")
+    boxOutline.Position = position
+    boxOutline.Size = size
+    boxOutline.Color = Color3.fromRGB(255, 255, 255)  -- White outline color
+    boxOutline.Filled = false
+    boxOutline.OutlineColor = Color3.fromRGB(0, 0, 0)  -- Black outline color
+
+    return boxOutline, boxFilled
+end
+
+-- Function to create and return a drawing for tracer
+local function createTracer(fromPos, toPos)
+    local tracer = Drawing.new("Line")
+    tracer.From = fromPos
+    tracer.To = toPos
+    tracer.Color = Color3.fromRGB(255, 255, 255)
+    tracer.Thickness = 1
+    return tracer
+end
 
 -- | ESP HANDLER
 
@@ -47,7 +77,6 @@ function EspLib:createEsp(player)
 
     local rootPart = char:WaitForChild("HumanoidRootPart")
     local head = char:FindFirstChild("Head")
-
     local espElements = {}
 
     if EspLib.settings.name then
@@ -61,42 +90,35 @@ function EspLib:createEsp(player)
         table.insert(espElements, distanceText)
     end
 
-  
-
     -- Tracer
     if EspLib.settings.tracers then
-        local tracer = Drawing.new("Line")
-        tracer.From = Camera:WorldToViewportPoint(Camera.CFrame.Position)
-        tracer.To = Camera:WorldToViewportPoint(rootPart.Position)
-        tracer.Color = Color3.fromRGB(255, 255, 255)
-        tracer.Thickness = 1
+        local tracer = createTracer(Camera:WorldToViewportPoint(Camera.CFrame.Position), Camera:WorldToViewportPoint(rootPart.Position))
         table.insert(espElements, tracer)
     end
 
-    -- Box
+    -- Box (both filled and outline)
     if EspLib.settings.box then
-        local boxOutline = Drawing.new("Square")
-        boxOutline.Color = Color3.fromRGB(255, 255, 255)
-        boxOutline.Outline = true
-        boxOutline.OutlineColor = Color3.fromRGB(0, 0, 0)
-        boxOutline.Filled = false
+        local boxOutline, boxFilled = createBox(Vector2.new(0, 40), Vector2.new(50, 100))  -- Example size
         table.insert(espElements, boxOutline)
+        table.insert(espElements, boxFilled)
+    end
+
+    -- Debugging option: Print details
+    if EspLib.settings.debug then
+        print("ESP Created for " .. player.Name)
+        print("Position: " .. tostring(rootPart.Position))
+        print("Number of ESP elements: " .. #espElements)
     end
 
     -- Update ESP elements every frame
     RunService.RenderStepped:Connect(function()
-        local onScreen = isOnScreen(rootPart.Position)
-        if onScreen then
-            for _, element in ipairs(espElements) do
-                if element and element.Remove then
-                    element.Visible = true
-                end
-            end
-        else
-            for _, element in ipairs(espElements) do
-                if element and element.Remove then
-                    element.Visible = false
-                end
+        if EspLib.settings.debug then
+            print("Updating ESP elements for " .. player.Name)
+        end
+
+        for _, element in ipairs(espElements) do
+            if element then
+                element.Visible = true
             end
         end
     end)
