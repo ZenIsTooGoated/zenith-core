@@ -102,14 +102,12 @@ function esplibrary:createESP(target)
 
     -- Update function to continuously update ESP
     game:GetService("RunService").RenderStepped:Connect(function()
-        -- Get the world position of key parts for bounding box calculation
-        local humanoidRootPart = target.HumanoidRootPart
-        local head = target:FindFirstChild("Head")
+      
         
         -- Ensure both parts exist
         if not humanoidRootPart or not head then return end
         
-        local Dimensions = { humanoidRootPart, head } -- Parts we are using to calculate the bounds
+        local Dimensions = { target.HumanoidRootPart, target.Head, target["Left Arm"], target["Right Arm"], target["Left Leg"], target["Right Leg"] } -- Parts we are using to calculate the bounds
         
         local Y_Minimal, Y_Maximal = Camera.ViewportSize.Y, 0
         local X_Minimal, X_Maximal = Camera.ViewportSize.X, 0
