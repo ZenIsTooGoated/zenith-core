@@ -7,7 +7,8 @@ espLib.settings = {
     tracers = true,
     outlines = true,
     font = Drawing.Fonts.Plex,
-    playerEsp = true -- New setting to enable automatic player ESP
+    playerEsp = true, -- New setting to enable automatic player ESP
+    debug = true -- Setting to enable debug logs
 }
 
 -- | Utility Functions
@@ -23,6 +24,13 @@ local function worldToViewportPoint(position)
     local camera = workspace.CurrentCamera
     local viewportPoint, onScreen = camera:WorldToViewportPoint(position)
     return Vector2.new(viewportPoint.X, viewportPoint.Y), onScreen
+end
+
+-- | Debug Function
+local function debugLog(message)
+    if espLib.settings.debug then
+        print("[ESP DEBUG] " .. message)
+    end
 end
 
 -- | ESP Creation Function
@@ -88,6 +96,7 @@ function espLib.createEsp(target)
 
     function espObjects:updateEsp()
         if not target or not target:IsDescendantOf(workspace) then
+            debugLog("Target no longer exists or is not in workspace.")
             self:removeEsp()
             return
         end
@@ -103,6 +112,9 @@ function espLib.createEsp(target)
                 self.name.Text = target.Name
                 self.name.Position = screenPos - Vector2.new(self.name.TextBounds.X / 2, 50)
                 self.name.Visible = nameOnScreen
+                if espLib.settings.debug then
+                    debugLog("Updated name for " .. target.Name)
+                end
             else
                 self.name.Visible = false
             end
@@ -124,6 +136,10 @@ function espLib.createEsp(target)
                     self.boxOutline.Visible = boxOnScreen
                 else
                     self.boxOutline.Visible = false
+                end
+
+                if espLib.settings.debug then
+                    debugLog("Updated box for " .. target.Name)
                 end
             else
                 self.box.Visible = false
@@ -150,6 +166,9 @@ function espLib.createEsp(target)
                 else
                     self.healthBarOutline.Visible = false
                 end
+                if espLib.settings.debug then
+                    debugLog("Updated health bar for " .. target.Name)
+                end
             else
                 self.healthBar.Visible = false
                 self.healthBarOutline.Visible = false
@@ -162,6 +181,9 @@ function espLib.createEsp(target)
                 self.distance.Text = string.format("%.0f studs", distance)
                 self.distance.Position = screenPos + Vector2.new(-self.distance.TextBounds.X / 2, 60)
                 self.distance.Visible = distanceOnScreen
+                if espLib.settings.debug then
+                    debugLog("Updated distance for " .. target.Name .. ": " .. distance .. " studs")
+                end
             else
                 self.distance.Visible = false
             end
@@ -172,10 +194,14 @@ function espLib.createEsp(target)
                 self.tracer.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
                 self.tracer.To = screenPos
                 self.tracer.Visible = tracerOnScreen
+                if espLib.settings.debug then
+                    debugLog("Updated tracer for " .. target.Name)
+                end
             else
                 self.tracer.Visible = false
             end
         else
+            debugLog("Target is invalid (no humanoid or health < 1).")
             self:removeEsp()
         end
     end
@@ -186,25 +212,31 @@ function espLib.createEsp(target)
                 object:Remove()
             end
         end
+        debugLog("Removed ESP for " .. target.Name)
     end
 
     return espObjects
 end
 
+-- | Function to Create Player ESP
 function espLib.createPlayerEsp(player)
     local espObjects
     player.CharacterAdded:Connect(function(character)
         local rootPart = character:WaitForChild("HumanoidRootPart")
+        
+        -- Create ESP for this player
         espObjects = espLib.createEsp(character)
         
+        -- Automatically remove ESP when the player leaves or character is removed
         local function playerLeaving()
             if espObjects then
                 espObjects:removeEsp()
             end
         end
 
-        
         player.CharacterRemoving:Connect(playerLeaving)
+        player.OnDestroy = playerLeaving
+        debugLog("Created ESP for player " .. player.Name)
     end)
 end
 
