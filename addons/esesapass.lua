@@ -45,7 +45,7 @@ local function createBox(position, size)
     boxFilled.Position = position
     boxFilled.Size = size
     boxFilled.Color = Color3.fromRGB(0, 255, 0)  -- You can change this to any color you want
-    boxFilled.Filled = true
+    boxFilled.Filled = false
     boxFilled.Outline = false  -- No outline for the filled box
 
     -- Outline box
@@ -88,38 +88,30 @@ function EspLib:createEsp(player)
         return nil  -- If it's not on screen, return nil
     end
 
+    -- Creating ESP elements for the player
+    local nameText, distanceText, tracer, boxOutline, boxFilled
+
     if EspLib.settings.name then
-        local nameText = createText(player.Name)
-        local screenPos = getScreenPosition(rootPart.Position)
-        if screenPos then
-            nameText.Position = screenPos + Vector2.new(0, -40)  -- Adjust Y position for spacing
-            table.insert(espElements, nameText)
-        end
+        nameText = createText(player.Name)
+        table.insert(espElements, nameText)
     end
 
     if EspLib.settings.distance then
-        local distanceText = createText(math.floor((rootPart.Position - Camera.CFrame.Position).Magnitude) .. " studs")
-        local screenPos = getScreenPosition(rootPart.Position)
-        if screenPos then
-            distanceText.Position = screenPos + Vector2.new(0, -20)  -- Adjust Y position for spacing
-            table.insert(espElements, distanceText)
-        end
+        distanceText = createText(math.floor((rootPart.Position - Camera.CFrame.Position).Magnitude) .. " studs")
+        table.insert(espElements, distanceText)
     end
 
     -- Tracer
     if EspLib.settings.tracers then
-        local tracer = createTracer(Camera:WorldToViewportPoint(Camera.CFrame.Position), Camera:WorldToViewportPoint(rootPart.Position))
+        tracer = createTracer(Camera:WorldToViewportPoint(Camera.CFrame.Position), Camera:WorldToViewportPoint(rootPart.Position))
         table.insert(espElements, tracer)
     end
 
     -- Box (both filled and outline)
     if EspLib.settings.box then
-        local screenPos = getScreenPosition(rootPart.Position)
-        if screenPos then
-            local boxOutline, boxFilled = createBox(screenPos + Vector2.new(-25, -50), Vector2.new(50, 100))  -- Example size and position
-            table.insert(espElements, boxOutline)
-            table.insert(espElements, boxFilled)
-        end
+        boxOutline, boxFilled = createBox(Vector2.new(0, 0), Vector2.new(50, 100))  -- Example size
+        table.insert(espElements, boxOutline)
+        table.insert(espElements, boxFilled)
     end
 
     -- Debugging option: Print details
@@ -131,18 +123,46 @@ function EspLib:createEsp(player)
 
     -- Update ESP elements every frame
     RunService.RenderStepped:Connect(function()
+        local screenPos = getScreenPosition(rootPart.Position)
+        
         if EspLib.settings.debug then
             print("Updating ESP elements for " .. player.Name)
         end
 
-        for _, element in ipairs(espElements) do
-            if element then
+        if screenPos then
+            -- Update position for each element
+            if EspLib.settings.name then
+                nameText.Position = screenPos + Vector2.new(0, -40)  -- Adjust Y position for spacing
+            end
+
+            if EspLib.settings.distance then
+                distanceText.Position = screenPos + Vector2.new(0, -20)  -- Adjust Y position for spacing
+            end
+
+            -- Update tracer
+            if EspLib.settings.tracers then
+                tracer.From = Camera:WorldToViewportPoint(Camera.CFrame.Position)
+                tracer.To = Camera:WorldToViewportPoint(rootPart.Position)
+            end
+
+            -- Update box (both filled and outline)
+            if EspLib.settings.box then
+                boxOutline.Position = screenPos + Vector2.new(-25, -50)  -- Adjust position around the player
+                boxFilled.Position = screenPos + Vector2.new(-25, -50)  -- Same position as outline, but filled
+            end
+
+            -- Make sure the ESP elements are visible
+            for _, element in ipairs(espElements) do
                 element.Visible = true
+            end
+        else
+            -- Hide all ESP elements if the player is off-screen
+            for _, element in ipairs(espElements) do
+                element.Visible = false
             end
         end
     end)
 end
-
 
 -- Return the module
 return EspLib
