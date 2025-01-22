@@ -7,7 +7,7 @@ espLibrary.settings.box = {
     color = Color3.fromRGB(255, 255, 255),
     outline = true,
     outlineColor = Color3.fromRGB(0, 0, 0),
-    margin = 70  -- Additional margin to make the box larger than the parts
+    margin = 10  -- Additional margin to make the box larger than the parts
 }
 
 espLibrary.settings.tracer = {
