@@ -153,7 +153,7 @@ function esplibrary:createESP(target)
             if esplibrary.settings.box.outline then
                 outline.Visible = true
                 outline.Size = boxSize
-                outline.Position = boxPosition - Vector2.new(2, 2)
+                outline.Position = boxPosition
                 outline.Color = esplibrary.settings.box.outlineColor
             else
                 outline.Visible = false
