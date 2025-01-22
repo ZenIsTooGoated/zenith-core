@@ -64,6 +64,11 @@ function espLib.createEsp(target)
         Visible = false,
     })
 
+    local function isOnScreen(position)
+        local _, onScreen = workspace.CurrentCamera:WorldToViewportPoint(position)
+        return onScreen
+    end
+
     function espObjects:updateEsp()
         if not target or not target:IsDescendantOf(workspace) then
             self:removeEsp()
@@ -125,6 +130,7 @@ function espLib.createEsp(target)
                     self.tracer.Visible = false
                 end
             else
+                -- Set all ESP objects to invisible if off-screen
                 for _, object in pairs(self) do
                     if typeof(object) == "Instance" then
                         object.Visible = false
