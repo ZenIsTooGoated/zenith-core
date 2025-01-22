@@ -38,17 +38,18 @@ end
 
 -- | Add Object to ESP
 function ESP:AddObject(object)
+    print("[ESP]: Adding object", object.Name)
     local part
     if object:IsA("Model") then
         part = object.PrimaryPart
         if not part then
-            warn("[ESP]: Model has no PrimaryPart")
+            warn("[ESP]: Model has no PrimaryPart", object.Name)
             return
         end
     elseif object:IsA("BasePart") then
         part = object
     else
-        warn("[ESP]: Unsupported object type")
+        warn("[ESP]: Unsupported object type", object.Name)
         return
     end
 
@@ -93,11 +94,13 @@ function ESP:AddObject(object)
         }) or nil
     }
 
+    print("[ESP]: Object added successfully", object.Name)
     table.insert(self.Objects, espObject)
 end
 
 -- | Remove Object from ESP
 function ESP:RemoveObject(object)
+    print("[ESP]: Removing object", object.Name)
     for i, espObject in ipairs(self.Objects) do
         if espObject.Object == object then
             for _, drawing in pairs(espObject) do
@@ -106,6 +109,7 @@ function ESP:RemoveObject(object)
                 end
             end
             table.remove(self.Objects, i)
+            print("[ESP]: Object removed successfully", object.Name)
             break
         end
     end
@@ -168,6 +172,7 @@ runService.RenderStepped:Connect(function()
                 espObject.HealthBar.To = barEnd
             end
         else
+            print("[ESP]: Object no longer valid or out of workspace", espObject.Object.Name)
             ESP:RemoveObject(espObject.Object)
         end
     end
