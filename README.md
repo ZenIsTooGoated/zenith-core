@@ -6,14 +6,11 @@
 | Arsenal              |🟢|  
 | Tower of Hell        |🟢|    
 | Basketball Legends   |🟢 |      
-| Turbo Racing Simulator    |🟢|  
-| Be a Paper Airplane Simulator    |🟢| 
 | Dunking Simulator    |🟢| 
 | Fisch    |🟢|    
 | Break in 2    |🟢|    
 | Ability Wars    |🟢|    
-| Blade Ball    |🔴|    
-| Blue Lock: Rivals    |🔴|    
+| Blade Ball    |🟡|    
 | Blox Fruits    |🔴|    
      
 
