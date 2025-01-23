@@ -3,26 +3,18 @@ ESP.__index = ESP
 
 -- Default settings
 ESP.settings = {
+    outline = true,
+
     box = {
         enabled = true,
-        outline = true,
         color = Color3.fromRGB(255, 255, 255),
         thickness = 1
     },
     tracer = {
         enabled = true,
         color = Color3.fromRGB(255, 255, 255),
-        thickness = 1
-    },
-    name = {
-        enabled = true,
-        color = Color3.fromRGB(255, 255, 255),
-        size = 13
-    },
-    distance = {
-        enabled = true,
-        color = Color3.fromRGB(255, 255, 255),
-        size = 13
+        thickness = 1,
+        outlineColor = Color3.new(0, 0, 0), -- Outline color for tracers
     }
 }
 
@@ -35,17 +27,18 @@ function ESP.new(object)
         outline = Drawing.new("Quad"),
         fill = Drawing.new("Quad"),
     }
-    self.tracer = Drawing.new("Line")
-    self.name = Drawing.new("Text")
-    self.distance = Drawing.new("Text")
+    self.tracer = {
+        outline = Drawing.new("Line"),
+        main = Drawing.new("Line"),
+    }
 
     -- Initial drawing configurations
     for _, part in pairs(self.box) do
         part.Visible = false
     end
-    self.tracer.Visible = false
-    self.name.Visible = false
-    self.distance.Visible = false
+    for _, part in pairs(self.tracer) do
+        part.Visible = false
+    end
 
     return self
 end
@@ -90,7 +83,7 @@ function ESP:Update()
 
             -- Update box
             if ESP.settings.box.enabled then
-                self.box.outline.Visible = ESP.settings.box.outline
+                self.box.outline.Visible = ESP.settings.outline
                 self.box.outline.PointA = Vector2.new(RightX, TopY)
                 self.box.outline.PointB = Vector2.new(LeftX, TopY)
                 self.box.outline.PointC = Vector2.new(LeftX, DownY)
@@ -112,49 +105,26 @@ function ESP:Update()
 
             -- Update tracer
             if ESP.settings.tracer.enabled then
-                self.tracer.Visible = true
-                self.tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                self.tracer.To = Vector2.new((LeftX + RightX) / 2, DownY)
-                self.tracer.Color = ESP.settings.tracer.color
-                self.tracer.Thickness = ESP.settings.tracer.thickness + 1
+                local tracerFrom = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                local tracerTo = Vector2.new((LeftX + RightX) / 2, DownY)
+
+                -- Tracer outline
+                self.tracer.outline.Visible = ESP.settings.outline
+                self.tracer.outline.From = tracerFrom
+                self.tracer.outline.To = tracerTo
+                self.tracer.outline.Color = ESP.settings.tracer.outlineColor
+                self.tracer.outline.Thickness = ESP.settings.tracer.thickness + 1
+
+                -- Main tracer
+                self.tracer.main.Visible = true
+                self.tracer.main.From = tracerFrom
+                self.tracer.main.To = tracerTo
+                self.tracer.main.Color = ESP.settings.tracer.color
+                self.tracer.main.Thickness = ESP.settings.tracer.thickness
             else
-                self.tracer.Visible = false
+                self.tracer.outline.Visible = false
+                self.tracer.main.Visible = false
             end
-
-            -- Update name
-            -- Update name text
-if ESP.settings.name.enabled then
-    self.name.Visible = true
-    self.name.Text = self.object.Name
-
-    -- Position the name text above the bounding box
-    local boxCenterX = (LeftX + RightX) / 2
-    local boxTopY = TopY
-    self.name.Position = Vector2.new(boxCenterX, boxTopY - 20) -- Offset above the box
-    self.name.Color = ESP.settings.name.color
-    self.name.Size = ESP.settings.name.size
-    self.name.Center = true
-else
-    self.name.Visible = false
-end
-
--- Update distance text
-if ESP.settings.distance.enabled then
-    local distance = (Camera.CFrame.Position - rootPart.Position).Magnitude
-    self.distance.Visible = true
-    self.distance.Text = string.format("%.0f studs", distance)
-
-    -- Position the distance text below the bounding box
-    local boxCenterX = (LeftX + RightX) / 2
-    local boxBottomY = DownY
-    self.distance.Position = Vector2.new(boxCenterX, boxBottomY + 15) -- Offset below the box
-    self.distance.Color = ESP.settings.distance.color
-    self.distance.Size = ESP.settings.distance.size
-    self.distance.Center = true
-else
-    self.distance.Visible = false
-end
-
         else
             self:Clear()
         end
@@ -168,9 +138,9 @@ function ESP:Clear()
     for _, part in pairs(self.box) do
         part.Visible = false
     end
-    self.tracer.Visible = false
-    self.name.Visible = false
-    self.distance.Visible = false
+    for _, part in pairs(self.tracer) do
+        part.Visible = false
+    end
 end
 
 -- Destroy ESP instance
@@ -178,9 +148,9 @@ function ESP:Destroy()
     for _, part in pairs(self.box) do
         part:Remove()
     end
-    self.tracer:Remove()
-    self.name:Remove()
-    self.distance:Remove()
+    for _, part in pairs(self.tracer) do
+        part:Remove()
+    end
 end
 
 -- Library to manage ESP objects
