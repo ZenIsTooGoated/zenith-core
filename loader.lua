@@ -20,14 +20,6 @@ local gameScripts = {
         placeId = 16732694052,
         gameId = 5750914919,
     },
-    ["turboracingsim"] = {
-        placeId = 115560789670995,
-        gameId = 7009298037,
-    },
-    ["beapaperairplane"] = {
-        placeId = 109543391562036,
-        gameId = 6873502822,
-    },
     ["dunkingsim"] = {
         placeId = 7655745946,
         gameId = 2974058674
