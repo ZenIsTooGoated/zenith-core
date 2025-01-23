@@ -3,7 +3,7 @@ ESP.__index = ESP
 
 -- Default settings
 ESP.settings = {
-    outline = true,
+   outline = true,
 
     box = {
         enabled = true,
@@ -18,7 +18,8 @@ ESP.settings = {
     name = {
         enabled = true,
         color = Color3.fromRGB(255, 255, 255),
-        size = 13
+        size = 13,
+        autoscale = true
     },
 }
 
@@ -32,8 +33,8 @@ function ESP.new(object)
         fill = Drawing.new("Quad"),
     }
     self.tracer = {
-        line = Drawing.new("Line"),
-        outline = Drawing.new("Line")
+        outline = Drawing.new("Line"),
+        line = Drawing.new("Line")
     }
     self.name = Drawing.new("Text")
 
@@ -41,8 +42,8 @@ function ESP.new(object)
     for _, part in pairs(self.box) do
         part.Visible = false
     end
-    self.tracer.line.Visible = false
     self.tracer.outline.Visible = false
+    self.tracer.line.Visible = false
     self.name.Visible = false
 
     return self
@@ -110,33 +111,45 @@ function ESP:Update()
 
             -- Update tracer
             if ESP.settings.tracer.enabled then
-                self.tracer.outline.Visible = ESP.settings.outline
-                self.tracer.outline.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                self.tracer.outline.Visible = true
+                self.tracer.line.Visible = true
+
+                self.tracer.outline.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                 self.tracer.outline.To = Vector2.new((LeftX + RightX) / 2, DownY)
                 self.tracer.outline.Color = Color3.new(0, 0, 0)
                 self.tracer.outline.Thickness = ESP.settings.tracer.thickness + 1
 
-                self.tracer.line.Visible = true
-                self.tracer.line.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                self.tracer.line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                 self.tracer.line.To = Vector2.new((LeftX + RightX) / 2, DownY)
                 self.tracer.line.Color = ESP.settings.tracer.color
                 self.tracer.line.Thickness = ESP.settings.tracer.thickness
             else
-                self.tracer.line.Visible = false
                 self.tracer.outline.Visible = false
+                self.tracer.line.Visible = false
             end
 
-            -- Update name text
+            -- Update name
             if ESP.settings.name.enabled then
-                self.name.Visible = true
-                self.name.Text = self.object.Name
+                local namePos, onScreen = Camera:WorldToViewportPoint(Vector3.new((LeftX + RightX) / 2, TopY, 0))
+                if onScreen then
+                    self.name.Visible = true
+                    self.name.Text = self.object.Name
 
-                -- Position the name text at the TopY above the bounding box
-                local boxCenterX = (LeftX + RightX) / 2
-                self.name.Position = Vector2.new(boxCenterX, TopY - 15) -- Offset above the box
-                self.name.Color = ESP.settings.name.color
-                self.name.Size = ESP.settings.name.size
-                self.name.Center = true
+                    -- Position the name text at the top of the bounding box
+                    self.name.Position = Vector2.new(namePos.X, namePos.Y - 15)
+                    self.name.Color = ESP.settings.name.color
+
+                    if ESP.settings.name.autoscale then
+                        local distance = (Camera.CFrame.Position - rootPart.Position).Magnitude
+                        self.name.Size = math.clamp(1 / distance * 1000, 2, 30)
+                    else
+                        self.name.Size = ESP.settings.name.size
+                    end
+
+                    self.name.Center = true
+                else
+                    self.name.Visible = false
+                end
             else
                 self.name.Visible = false
             end
@@ -154,8 +167,8 @@ function ESP:Clear()
     for _, part in pairs(self.box) do
         part.Visible = false
     end
-    self.tracer.line.Visible = false
     self.tracer.outline.Visible = false
+    self.tracer.line.Visible = false
     self.name.Visible = false
 end
 
@@ -164,8 +177,8 @@ function ESP:Destroy()
     for _, part in pairs(self.box) do
         part:Remove()
     end
-    self.tracer.line:Remove()
     self.tracer.outline:Remove()
+    self.tracer.line:Remove()
     self.name:Remove()
 end
 
@@ -181,26 +194,4 @@ function ESPLibrary:Add(object)
 end
 
 -- Remove object from ESP
-function ESPLibrary:Remove(object)
-    for i, esp in ipairs(self.objects) do
-        if esp.object == object then
-            esp:Destroy()
-            table.remove(self.objects, i)
-            break
-        end
-    end
-end
-
--- Update all ESP objects
-function ESPLibrary:Update()
-    for _, esp in ipairs(self.objects) do
-        esp:Update()
-    end
-end
-
--- Main update loop
-game:GetService("RunService").RenderStepped:Connect(function()
-    ESPLibrary:Update()
-end)
-
-return ESPLibrary
+function ESPLibrary:Remove
