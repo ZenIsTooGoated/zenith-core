@@ -96,7 +96,7 @@ function ESP:Update()
                 self.box.outline.PointC = Vector2.new(LeftX, DownY)
                 self.box.outline.PointD = Vector2.new(RightX, DownY)
                 self.box.outline.Color = ESP.settings.box.color
-                self.box.outline.Thickness = ESP.settings.box.thickness
+                self.box.outline.Thickness = ESP.settings.box.thickness + 1
 
                 self.box.fill.Visible = true
                 self.box.fill.PointA = Vector2.new(RightX, TopY)
@@ -116,7 +116,7 @@ function ESP:Update()
                 self.tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                 self.tracer.To = Vector2.new((LeftX + RightX) / 2, DownY)
                 self.tracer.Color = ESP.settings.tracer.color
-                self.tracer.Thickness = ESP.settings.tracer.thickness
+                self.tracer.Thickness = ESP.settings.tracer.thickness + 1
             else
                 self.tracer.Visible = false
             end
