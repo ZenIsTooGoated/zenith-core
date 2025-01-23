@@ -95,7 +95,7 @@ function ESP:Update()
                 self.box.outline.PointB = Vector2.new(LeftX, TopY)
                 self.box.outline.PointC = Vector2.new(LeftX, DownY)
                 self.box.outline.PointD = Vector2.new(RightX, DownY)
-                self.box.outline.Color = ESP.settings.box.color
+                self.box.outline.Color = Color3.new(0, 0, 0)
                 self.box.outline.Thickness = ESP.settings.box.thickness + 1
 
                 self.box.fill.Visible = true
@@ -122,29 +122,39 @@ function ESP:Update()
             end
 
             -- Update name
-            if ESP.settings.name.enabled then
-                self.name.Visible = true
-                self.name.Text = self.object.Name
-                self.name.Position = Vector2.new((LeftX + RightX) / 2, TopY - 20)
-                self.name.Color = ESP.settings.name.color
-                self.name.Size = ESP.settings.name.size
-                self.name.Center = true
-            else
-                self.name.Visible = false
-            end
+            -- Update name text
+if ESP.settings.name.enabled then
+    self.name.Visible = true
+    self.name.Text = self.object.Name
 
-            -- Update distance
-            if ESP.settings.distance.enabled then
-                local distance = (Camera.CFrame.Position - rootPart.Position).Magnitude
-                self.distance.Visible = true
-                self.distance.Text = string.format("%.0f studs", distance)
-                self.distance.Position = Vector2.new((LeftX + RightX) / 2, DownY + 5)
-                self.distance.Color = ESP.settings.distance.color
-                self.distance.Size = ESP.settings.distance.size
-                self.distance.Center = true
-            else
-                self.distance.Visible = false
-            end
+    -- Position the name text above the bounding box
+    local boxCenterX = (LeftX + RightX) / 2
+    local boxTopY = TopY
+    self.name.Position = Vector2.new(boxCenterX, boxTopY - 20) -- Offset above the box
+    self.name.Color = ESP.settings.name.color
+    self.name.Size = ESP.settings.name.size
+    self.name.Center = true
+else
+    self.name.Visible = false
+end
+
+-- Update distance text
+if ESP.settings.distance.enabled then
+    local distance = (Camera.CFrame.Position - rootPart.Position).Magnitude
+    self.distance.Visible = true
+    self.distance.Text = string.format("%.0f studs", distance)
+
+    -- Position the distance text below the bounding box
+    local boxCenterX = (LeftX + RightX) / 2
+    local boxBottomY = DownY
+    self.distance.Position = Vector2.new(boxCenterX, boxBottomY + 15) -- Offset below the box
+    self.distance.Color = ESP.settings.distance.color
+    self.distance.Size = ESP.settings.distance.size
+    self.distance.Center = true
+else
+    self.distance.Visible = false
+end
+
         else
             self:Clear()
         end
