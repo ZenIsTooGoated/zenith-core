@@ -13,9 +13,13 @@ ESP.settings = {
     tracer = {
         enabled = true,
         color = Color3.fromRGB(255, 255, 255),
-        thickness = 1,
-        outlineColor = Color3.new(0, 0, 0), -- Outline color for tracers
-    }
+        thickness = 1
+    },
+    name = {
+        enabled = true,
+        color = Color3.fromRGB(255, 255, 255),
+        size = 13
+    },
 }
 
 -- Constructor for new ESP objects
@@ -28,17 +32,18 @@ function ESP.new(object)
         fill = Drawing.new("Quad"),
     }
     self.tracer = {
-        outline = Drawing.new("Line"),
-        main = Drawing.new("Line"),
+        line = Drawing.new("Line"),
+        outline = Drawing.new("Line")
     }
+    self.name = Drawing.new("Text")
 
     -- Initial drawing configurations
     for _, part in pairs(self.box) do
         part.Visible = false
     end
-    for _, part in pairs(self.tracer) do
-        part.Visible = false
-    end
+    self.tracer.line.Visible = false
+    self.tracer.outline.Visible = false
+    self.name.Visible = false
 
     return self
 end
@@ -105,26 +110,37 @@ function ESP:Update()
 
             -- Update tracer
             if ESP.settings.tracer.enabled then
-                local tracerFrom = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                local tracerTo = Vector2.new((LeftX + RightX) / 2, DownY)
-
-                -- Tracer outline
                 self.tracer.outline.Visible = ESP.settings.outline
-                self.tracer.outline.From = tracerFrom
-                self.tracer.outline.To = tracerTo
-                self.tracer.outline.Color = ESP.settings.tracer.outlineColor
+                self.tracer.outline.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                self.tracer.outline.To = Vector2.new((LeftX + RightX) / 2, DownY)
+                self.tracer.outline.Color = Color3.new(0, 0, 0)
                 self.tracer.outline.Thickness = ESP.settings.tracer.thickness + 1
 
-                -- Main tracer
-                self.tracer.main.Visible = true
-                self.tracer.main.From = tracerFrom
-                self.tracer.main.To = tracerTo
-                self.tracer.main.Color = ESP.settings.tracer.color
-                self.tracer.main.Thickness = ESP.settings.tracer.thickness
+                self.tracer.line.Visible = true
+                self.tracer.line.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                self.tracer.line.To = Vector2.new((LeftX + RightX) / 2, DownY)
+                self.tracer.line.Color = ESP.settings.tracer.color
+                self.tracer.line.Thickness = ESP.settings.tracer.thickness
             else
+                self.tracer.line.Visible = false
                 self.tracer.outline.Visible = false
-                self.tracer.main.Visible = false
             end
+
+            -- Update name text
+            if ESP.settings.name.enabled then
+                self.name.Visible = true
+                self.name.Text = self.object.Name
+
+                -- Position the name text at the TopY above the bounding box
+                local boxCenterX = (LeftX + RightX) / 2
+                self.name.Position = Vector2.new(boxCenterX, TopY - 15) -- Offset above the box
+                self.name.Color = ESP.settings.name.color
+                self.name.Size = ESP.settings.name.size
+                self.name.Center = true
+            else
+                self.name.Visible = false
+            end
+
         else
             self:Clear()
         end
@@ -138,9 +154,9 @@ function ESP:Clear()
     for _, part in pairs(self.box) do
         part.Visible = false
     end
-    for _, part in pairs(self.tracer) do
-        part.Visible = false
-    end
+    self.tracer.line.Visible = false
+    self.tracer.outline.Visible = false
+    self.name.Visible = false
 end
 
 -- Destroy ESP instance
@@ -148,9 +164,9 @@ function ESP:Destroy()
     for _, part in pairs(self.box) do
         part:Remove()
     end
-    for _, part in pairs(self.tracer) do
-        part:Remove()
-    end
+    self.tracer.line:Remove()
+    self.tracer.outline:Remove()
+    self.name:Remove()
 end
 
 -- Library to manage ESP objects
