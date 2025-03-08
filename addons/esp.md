@@ -12,6 +12,11 @@
 - **Health Check**: Removes ESP for dead players.
 
 
+## Loadstring
+```lua
+local espLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/addons/esp.lua"))()
+```
+
 ## Configuration
 The script uses `getgenv().ESPSettings` for customization.
 
