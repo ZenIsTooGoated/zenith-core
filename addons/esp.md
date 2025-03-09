@@ -13,7 +13,7 @@
 
 ## Loadstring
 ```lua
-local espLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/addons/esp.lua"))()
+local espLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/ZenIsTooGoated/zenith-core/refs/heads/main/addons/esp.lua"))()
 ```
 
 ## Configuration
