@@ -9,7 +9,6 @@
 - **Name Display**: Displays the name of the player.
 - **Team Check**: Optionally hides teammates from ESP.
 - **Team Colors**: Colors ESP elements based on the player's team color.
-- **Health Check**: Removes ESP for dead players.
 
 
 ## Loadstring
@@ -20,7 +19,7 @@ local espLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/cu
 ## Configuration
 The script uses `getgenv().ESPSettings` for customization.
 
-### Example Configuration
+### Default Configuration
 ```lua
 getgenv().ESPSettings = {
     enabled = true,
@@ -29,7 +28,7 @@ getgenv().ESPSettings = {
     appearance = {
         boxes = true,
         names = true,
-        distance = false,
+        distance = true,
         tracers = false,
         healthbar = true,
 
@@ -41,7 +40,6 @@ getgenv().ESPSettings = {
     behavior = {
         teamcheck = false,
         teamcolors = false,
-        healthcheck = false,
     },
 }
 ```
@@ -70,7 +68,6 @@ getgenv().ESPSettings = {
 |---------------|--------|--------------------------------------------------|
 | `teamcheck`   | Boolean | Hides ESP for teammates if enabled.             |
 | `teamcolors`  | Boolean | Colors ESP elements based on team colors.       |
-| `healthcheck` | Boolean | Removes ESP if a player has 0 health.           |
 
 ## Usage
 ### **Enable ESP**
