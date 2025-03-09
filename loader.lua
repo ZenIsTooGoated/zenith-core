@@ -37,7 +37,7 @@ local gameScripts = {
 for gameName, ids in pairs(gameScripts) do
     if (ids.placeId and game.PlaceId == ids.placeId) or (ids.gameId and game.GameId == ids.gameId) then
         local success, errorMsg = pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/"..gameName..".lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ZenIsTooGoated/zenith-core/refs/heads/main/games/"..gameName..".lua"))()
         end)
         
         if not success then
@@ -49,7 +49,7 @@ for gameName, ids in pairs(gameScripts) do
 end
 
 local success, errorMsg = pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/games/unsupported.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ZenIsTooGoated/zenith-core/refs/heads/main/games/unsupported.lua"))()
 end)
 
 if not success then
