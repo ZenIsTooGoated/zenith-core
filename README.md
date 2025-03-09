@@ -28,7 +28,7 @@
 3. use the loadstring below in your executor:
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/cuenhub/zenith-core/refs/heads/main/loader.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ZenIsTooGoated/zenith-core/refs/heads/main/loader.lua"))()
 ```
 
 
